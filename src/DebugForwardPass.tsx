@@ -5,7 +5,8 @@ import { BoneSequence, forwardPass } from "./math/solver";
 import { V2 } from "./math/v2";
 
 export const DebugForwardPass = ({
-  bones, basePosition,
+  bones,
+  basePosition,
 }: {
   bones: BoneSequence;
   basePosition: V2;
@@ -13,25 +14,24 @@ export const DebugForwardPass = ({
   const ref = useRef<Group>();
 
   useFrame(() => {
-    if (ref.current === undefined)
-      return;
-    const jointPositions = forwardPass(bones, basePosition);
+    if (ref.current === undefined) return;
+    const jointPositions = forwardPass(bones, basePosition).absolutePositions;
     for (let index = 0; index < ref.current.children.length; index++) {
       const child = ref.current.children[index]!;
       const jointPosition = jointPositions[index];
       if (jointPosition === undefined) {
         throw new Error(`No corresponding child position for index ${index}`);
       }
-      child.position.set(...jointPosition, 0);
+      child.position.set(...jointPosition, 100);
     }
   });
 
   return (
-    <group ref={ref} scale={[50, 50, 1]}>
-      {Array.from({ length: bones.length + 1 }).map(() => {
+    <group ref={ref}>
+      {Array.from({ length: bones.length + 1 }).map((_, index) => {
         return (
-          <mesh>
-            <boxBufferGeometry args={[0.25, 0.25]} />
+          <mesh key={index}>
+            <boxBufferGeometry args={[12.5, 12.5]} />
             <meshBasicMaterial color={"red"} />
           </mesh>
         );

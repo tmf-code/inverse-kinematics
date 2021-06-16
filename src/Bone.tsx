@@ -35,7 +35,7 @@ export const Bone = ({ joint, length, child }: IBone) => {
   return (
     <group ref={rotationRef}>
       <mesh ref={translationRef}>
-        <sphereBufferGeometry args={[0.4, 100, 100]} />
+        <sphereBufferGeometry args={[20, 100, 100]} />
         <meshNormalMaterial />
         {child && <Bone {...child} />}
       </mesh>

@@ -4,6 +4,7 @@ import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from "three";
 import { Bone } from "./Bone";
 import { BoneSequence, IBone, solve } from "./math/solver";
 import { V2 } from "./math/v2";
+import { useAnimationFrame } from "./useAnimationFrame";
 
 export const Base = ({
   position,
@@ -24,8 +25,8 @@ export const Base = ({
   });
 
   return (
-    <mesh ref={ref} scale={[50, 50, 1]}>
-      <boxBufferGeometry />
+    <mesh ref={ref}>
+      <boxBufferGeometry args={[50, 50]} />
       <meshNormalMaterial />
       <Bone {...chain} />
     </mesh>
