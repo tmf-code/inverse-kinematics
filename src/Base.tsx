@@ -2,7 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import React, { useMemo, useRef } from "react";
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from "three";
 import { Bone } from "./Bone";
-import { BoneSequence, IBone } from "./math/solver";
+import { BoneSequence, IBone, solve } from "./math/solver";
 import { V2 } from "./math/v2";
 
 export const Base = ({
@@ -18,6 +18,7 @@ export const Base = ({
   useFrame(() => {
     if (!ref.current) return;
     ref.current.position.set(...position, 0);
+    solve(sequence, position);
   });
 
   return (
@@ -31,7 +32,6 @@ export const Base = ({
 
 function makeChain(bones: BoneSequence): IBone {
   let chain: IBone | undefined;
-
   for (let index = bones.length - 1; index >= 0; index--) {
     const bone = { ...bones[index]! };
 

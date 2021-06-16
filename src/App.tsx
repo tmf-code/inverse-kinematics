@@ -2,13 +2,14 @@ import { Canvas } from "@react-three/fiber";
 import React from "react";
 import "./App.css";
 import { Base } from "./Base";
+import { DebugForwardPass } from "./DebugForwardPass";
 import { BoneSequence } from "./math/solver";
 import { V2 } from "./math/v2";
 
 const bones: BoneSequence = [
   { joint: { angle: 0 }, length: 2 },
   { joint: { angle: 1 }, length: 2 },
-  { joint: { angle: 2 }, length: 2 },
+  { joint: { angle: 0 }, length: 2 },
   { joint: { angle: 3 }, length: 2 },
   { joint: { angle: 0.2 }, length: 2 },
   { joint: { angle: 0.4 }, length: 2 },
@@ -25,9 +26,12 @@ function App() {
         linear
       >
         <Base position={base} sequence={bones} />
+        <DebugForwardPass bones={bones} basePosition={base} />
       </Canvas>
     </div>
   );
 }
 
 export default App;
+
+
