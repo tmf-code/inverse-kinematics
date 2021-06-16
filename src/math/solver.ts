@@ -77,16 +77,11 @@ export function solve(bones: IBone[], basePosition: V2, target: V2) {
     nextAngles.push(nextAngle);
   }
 
-  if (nextAngles.length !== bones.length) {
-    throw new Error(
-      `Next angles is incorrect length. Should be ${bones.length}, got ${nextAngles.length}`
-    );
-  }
-
   for (let index = 0; index < bones.length; index++) {
     const bone = bones[index]!;
-
-    bone.joint.angle = nextAngles[index]!;
+    const nextAngle = nextAngles[index];
+    assertDefined(nextAngle);
+    bone.joint.angle = nextAngle;
 
     if (bone.joint.constraint !== undefined) {
       bone.joint.angle = clamp(
