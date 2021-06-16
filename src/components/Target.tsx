@@ -1,5 +1,5 @@
 import React from "react";
-import { V2 } from "./math/v2";
+import { V2 } from "src/math/v2";
 
 export const Target = ({ position }: { position: V2 }) => {
   return (

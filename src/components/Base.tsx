@@ -1,17 +1,16 @@
 import { useFrame } from "@react-three/fiber";
 import React, { useMemo, useRef } from "react";
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from "three";
-import { Bone } from "./Bone";
-import { BoneSequence, IBone, solve } from "./math/solver";
-import { V2 } from "./math/v2";
-import { useAnimationFrame } from "./useAnimationFrame";
+import { Bone, BoneProps } from "./Bone";
+import { IBone, solve } from "src/math/solver";
+import { V2 } from "src/math/v2";
 
 export const Base = ({
   position,
   sequence,
   target,
 }: {
-  sequence: BoneSequence;
+  sequence: IBone[];
   position: V2;
   target: V2;
 }) => {
@@ -28,15 +27,15 @@ export const Base = ({
     <mesh ref={ref}>
       <boxBufferGeometry args={[50, 50]} />
       <meshNormalMaterial />
-      <Bone {...chain} />
+      {chain && <Bone {...chain} />}
     </mesh>
   );
 };
 
-function makeChain(bones: BoneSequence): IBone {
-  let chain: IBone | undefined;
+function makeChain(bones: IBone[]): BoneProps | undefined {
+  let chain: BoneProps | undefined;
   for (let index = bones.length - 1; index >= 0; index--) {
-    const bone = { ...bones[index]! };
+    const bone: BoneProps = { ...bones[index]! };
 
     // Is first element
     if (chain === undefined) {
@@ -45,10 +44,6 @@ function makeChain(bones: BoneSequence): IBone {
     }
 
     chain = { ...bone, child: chain };
-  }
-
-  if (chain === undefined) {
-    throw new Error(`Did not construct chain from bones ${bones}`);
   }
 
   return chain;

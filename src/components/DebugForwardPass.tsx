@@ -1,14 +1,14 @@
 import { useFrame } from "@react-three/fiber";
 import React, { useRef } from "react";
 import { Group } from "three";
-import { BoneSequence, forwardPass } from "./math/solver";
-import { V2 } from "./math/v2";
+import { IBone, forwardPass } from "src/math/solver";
+import { V2 } from "src/math/v2";
 
 export const DebugForwardPass = ({
   bones,
   basePosition,
 }: {
-  bones: BoneSequence;
+  bones: IBone[];
   basePosition: V2;
 }) => {
   const ref = useRef<Group>();

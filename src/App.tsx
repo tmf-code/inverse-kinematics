@@ -1,28 +1,17 @@
 import { Canvas } from "@react-three/fiber";
-import React, { DependencyList, useEffect, useRef, useState } from "react";
-import "./App.css";
-import { Base } from "./Base";
-import { DebugForwardPass } from "./DebugForwardPass";
-import { BoneSequence, distanceToTarget } from "./math/solver";
+import React, { useRef, useState } from "react";
+import { Base } from "./components/Base";
+import { DebugForwardPass } from "./components/DebugForwardPass";
+import { distanceToTarget, IBone } from "./math/solver";
 import { V2 } from "./math/v2";
-import { Target } from "./Target";
+import { Target } from "./components/Target";
+import { useAnimationFrame } from "./hooks/useAnimationFrame";
 
-const bones: BoneSequence = [
+const bones: IBone[] = [
   { joint: { angle: 0 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-  { joint: { angle: 0, constraint: Math.PI / 3 }, length: 50 },
-
-  // { joint: { angle: 0 }, length: 200 },
-  // { joint: { angle: 3 }, length: 2 },
-  // { joint: { angle: 0.2 }, length: 2 },
-  // { joint: { angle: 0.4 }, length: 2 },
+  { joint: { angle: 0, constraint: Math.PI }, length: 200 },
+  { joint: { angle: 0, constraint: Math.PI }, length: 200 },
+  { joint: { angle: 0, constraint: Math.PI }, length: 200 },
 ];
 
 const basePosition: V2 = [0, 0];
@@ -31,7 +20,6 @@ function App() {
   const [targetPosition, setTargetPosition] = useState([500, 50] as V2);
   return (
     <div
-      className="App"
       onClick={(event) => {
         const position = [
           event.clientX - window.innerWidth / 2,
@@ -41,7 +29,12 @@ function App() {
       }}
     >
       <Canvas
-        style={{ width: "100%", height: "100%", position: "absolute" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          backgroundColor: "aquamarine",
+        }}
         orthographic
         linear
         camera={{ near: -1000 }}
@@ -69,19 +62,19 @@ const Logger = ({
   basePosition,
 }: {
   target: V2;
-  bones: BoneSequence;
+  bones: IBone[];
   basePosition: V2;
 }) => {
   const distanceRef = useRef<HTMLTableCellElement>(null);
 
-  useAnimationFrame(() => {
+  useAnimationFrame(1, () => {
     if (!distanceRef.current) return;
     distanceRef.current.innerText = distanceToTarget(
       bones,
       basePosition,
       target
     ).toFixed(3);
-  }, [target]);
+  });
 
   return (
     <div style={{ position: "absolute", top: 0, left: 0, userSelect: "none" }}>
@@ -95,38 +88,6 @@ const Logger = ({
       </table>
     </div>
   );
-};
-
-const useAnimationFrame = (
-  callback: ({
-    time,
-    delta: deltaTime,
-  }: {
-    time: number;
-    delta: number;
-  }) => void,
-  dependencies: DependencyList
-): void => {
-  const frame = useRef<number>();
-  const last = useRef(performance.now());
-  const init = useRef(performance.now());
-
-  const animate = () => {
-    const now = performance.now();
-    const time = (now - init.current) / 1000;
-    const delta = (now - last.current) / 1000;
-    callback({ time, delta });
-    last.current = now;
-    frame.current = requestAnimationFrame(animate);
-  };
-
-  useEffect(() => {
-    frame.current = requestAnimationFrame(animate);
-    return () => {
-      frame.current && cancelAnimationFrame(frame.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies);
 };
 
 export default App;

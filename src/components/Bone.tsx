@@ -11,9 +11,16 @@ import {
   MeshNormalMaterial,
   Vector3,
 } from "three";
-import { IBone } from "./math/solver";
 
-export const Bone = ({ joint, length, child }: IBone) => {
+export interface BoneProps {
+  joint: {
+    angle: number;
+  };
+  length: number;
+  child?: BoneProps;
+}
+
+export const Bone = ({ joint, length, child }: BoneProps) => {
   const rotationRef = useRef<Group>();
   const translationRef = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>();
 
