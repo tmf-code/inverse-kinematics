@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
-import { distanceToTarget, IBone } from "src/math/solver";
-import { V2 } from "src/math/v2";
 import { useAnimationFrame } from "src/hooks/useAnimationFrame";
+import { forwardPass, IBone } from "src/math/solver";
+import { V2, V2O } from "src/math/v2";
 
 export const Logger = ({
   target,
@@ -36,3 +36,11 @@ export const Logger = ({
     </div>
   );
 };
+
+export function distanceToTarget(bones: IBone[], basePosition: V2, target: V2) {
+  const { effectorPosition } = forwardPass(bones, {
+    position: basePosition,
+    rotation: 0,
+  });
+  return V2O.euclideanDistanceV2(target, effectorPosition);
+}

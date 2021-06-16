@@ -2,18 +2,92 @@ import { clamp } from "./math";
 import { V2, V2O } from "./v2";
 
 export interface IBone {
+  /**
+   * The joint that the bone rotates around
+   */
   readonly joint: IJoint;
   readonly length: number;
 }
 
 interface IJoint {
   angle: number;
-  constraint?: number;
+  readonly constraint?: number;
 }
+/**
+ * Changes joint angle to minimize distance of end effector to target
+ * Mutates each bone.joint.angle in bones
+ */
+export function solve(
+  bones: IBone[],
+  basePosition: V2,
+  target: V2,
+  options?: {
+    deltaAngle?: number;
+    learningRate?: number;
+    acceptedError?: number;
+  }
+) {
+  // Setup defaults
+  const deltaAngle = options?.deltaAngle ?? 0.00001;
+  const learningRate = options?.learningRate ?? 0.0001;
+  const acceptedError = options?.acceptedError ?? 10;
 
-const deltaAngle = 0.00001;
-const learningRate = 0.0001;
-const acceptedError = 10;
+  // Precalculate pivot positions
+  const { transforms: pivotTransforms, effectorPosition } = forwardPass(bones, {
+    position: basePosition,
+    rotation: 0,
+  });
+
+  const error = V2O.euclideanDistanceV2(target, effectorPosition);
+  if (error < acceptedError) return;
+
+  if (pivotTransforms.length !== bones.length + 1) {
+    throw new Error(
+      `Pivot transforms should have the same length as bones + 1. Got ${pivotTransforms.length}, expected ${bones.length}`
+    );
+  }
+
+  /**
+   * 1. Find angle steps that minimize error
+   * 2. Apply angle steps
+   */
+  bones
+    .map((bone, index) => {
+      const boneWithDeltaAngle = {
+        length: bone.length,
+        joint: {
+          angle: bone.joint.angle + deltaAngle,
+        },
+      };
+
+      // Get bone chain from this bones pivot
+      const projectedBones: IBone[] = [
+        boneWithDeltaAngle,
+        ...bones.slice(index + 1),
+      ];
+
+      // Get gradient from small change in pivot angle
+      const pivotTransform = pivotTransforms[index]!;
+      const { effectorPosition } = forwardPass(projectedBones, pivotTransform);
+      const projectedError = V2O.euclideanDistanceV2(target, effectorPosition);
+      const gradient = (projectedError - error) / deltaAngle;
+
+      // Get resultant angle step which minimizes error
+      const angleStep =
+        -gradient * adaptLearningRate(learningRate, projectedError);
+
+      return { joint: bone.joint, angleStep };
+    })
+    .forEach(({ joint, angleStep }) => {
+      joint.angle += angleStep;
+      if (joint.constraint === undefined) return;
+      joint.angle = clamp(
+        joint.angle,
+        -joint.constraint / 2,
+        joint.constraint / 2
+      );
+    });
+}
 
 function adaptLearningRate(baseLearningRate: number, distance: number): number {
   return distance > 100
@@ -21,122 +95,39 @@ function adaptLearningRate(baseLearningRate: number, distance: number): number {
     : baseLearningRate * ((distance + 25) / 125);
 }
 
-export function solve(bones: IBone[], basePosition: V2, target: V2) {
-  const { absolutePositions, absoluteRotations } = forwardPass(
-    bones,
-    basePosition
-  );
-  const effectorPosition = getEffectorPosition(absolutePositions);
-  const error = V2O.euclideanDistanceV2(target, effectorPosition);
-
-  if (error < acceptedError) return;
-
-  const nextAngles: number[] = [];
-
-  for (let index = 0; index < bones.length; index++) {
-    const bone = bones[index]!;
-
-    const boneWithDeltaAngle: Omit<IBone, "child"> = {
-      ...bone,
-      joint: {
-        angle: bone.joint.angle + deltaAngle,
-        constraint: bone.joint.constraint,
-      },
-    };
-
-    const projectedBones: IBone[] = [
-      boneWithDeltaAngle,
-      ...bones.slice(index + 1),
-    ];
-
-    const boneParentPosition = absolutePositions[index];
-    const boneParentRotation = absoluteRotations[index];
-
-    assertDefined(boneParentPosition);
-    assertDefined(boneParentRotation);
-
-    const projectedEffectorPosition = forwardPass(
-      projectedBones,
-      boneParentPosition,
-      boneParentRotation
-    ).absolutePositions.slice(-1)[0];
-
-    assertDefined(projectedEffectorPosition);
-
-    const projectedError = V2O.euclideanDistanceV2(
-      target,
-      projectedEffectorPosition
-    );
-
-    const gradient = (projectedError - error) / deltaAngle;
-
-    const nextAngle =
-      bone.joint.angle -
-      gradient * adaptLearningRate(learningRate, projectedError);
-
-    nextAngles.push(nextAngle);
-  }
-
-  for (let index = 0; index < bones.length; index++) {
-    const bone = bones[index]!;
-    const nextAngle = nextAngles[index];
-    assertDefined(nextAngle);
-    bone.joint.angle = nextAngle;
-
-    if (bone.joint.constraint !== undefined) {
-      bone.joint.angle = clamp(
-        bone.joint.angle,
-        -bone.joint.constraint / 2,
-        bone.joint.constraint / 2
-      );
-    }
-  }
+interface Transform {
+  position: V2;
+  rotation: number;
 }
 
-function getEffectorPosition(absolutionPositions: V2[]) {
-  const result = absolutionPositions.slice(-1)[0];
-  assertDefined(result);
-  return result;
-}
-
-function assertDefined<T extends any>(
-  value: T | undefined
-): asserts value is T {
-  if (value === undefined) {
-    throw new Error("Value should be defined");
-  }
-}
-
-export function distanceToTarget(bones: IBone[], basePosition: V2, target: V2) {
-  const { absolutePositions } = forwardPass(bones, basePosition);
-  const effectorPosition = getEffectorPosition(absolutePositions);
-  return V2O.euclideanDistanceV2(target, effectorPosition);
+interface ForwardPass {
+  transforms: Transform[];
+  effectorPosition: V2;
 }
 
 export function forwardPass(
   bones: IBone[],
-  parentPosition: V2,
-  parentRotation: number = 0
-): { absolutePositions: V2[]; absoluteRotations: number[] } {
-  const absolutePositions: V2[] = [parentPosition];
-  const absoluteRotations: number[] = [parentRotation];
+  pivotTransform: Transform
+): ForwardPass {
+  const transforms = [pivotTransform];
 
   for (let index = 0; index < bones.length; index++) {
     const currentBone = bones[index]!;
-    const parentBonePosition = absolutePositions[index];
-    const parentBoneRotation = absoluteRotations[index];
+    const parentTransform = transforms[index]!;
 
-    assertDefined(parentBonePosition);
-    assertDefined(parentBoneRotation);
-
-    const absoluteRotation = currentBone.joint.angle + parentBoneRotation;
+    const absoluteRotation = currentBone.joint.angle + parentTransform.rotation;
     const relativePosition = V2O.fromPolar(
       currentBone.length,
       absoluteRotation
     );
-    const absolutePosition = V2O.add(relativePosition, parentBonePosition);
-    absolutePositions.push(absolutePosition);
-    absoluteRotations.push(absoluteRotation);
+    const absolutePosition = V2O.add(
+      relativePosition,
+      parentTransform.position
+    );
+    transforms.push({ position: absolutePosition, rotation: absoluteRotation });
   }
-  return { absolutePositions, absoluteRotations };
+
+  const effectorPosition = transforms[transforms.length - 1]!.position;
+
+  return { transforms, effectorPosition };
 }

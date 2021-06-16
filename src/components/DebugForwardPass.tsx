@@ -1,8 +1,8 @@
 import { useFrame } from "@react-three/fiber";
 import React, { useRef } from "react";
-import { Group } from "three";
-import { IBone, forwardPass } from "src/math/solver";
+import { forwardPass, IBone } from "src/math/solver";
 import { V2 } from "src/math/v2";
+import { Group } from "three";
 
 export const DebugForwardPass = ({
   bones,
@@ -15,10 +15,13 @@ export const DebugForwardPass = ({
 
   useFrame(() => {
     if (ref.current === undefined) return;
-    const jointPositions = forwardPass(bones, basePosition).absolutePositions;
+    const { transforms } = forwardPass(bones, {
+      position: basePosition,
+      rotation: 0,
+    });
     for (let index = 0; index < ref.current.children.length; index++) {
       const child = ref.current.children[index]!;
-      const jointPosition = jointPositions[index];
+      const jointPosition = transforms[index]?.position;
       if (jointPosition === undefined) {
         throw new Error(`No corresponding child position for index ${index}`);
       }
