@@ -5,6 +5,7 @@ import { Base } from "./Base";
 import { DebugForwardPass } from "./DebugForwardPass";
 import { BoneSequence } from "./math/solver";
 import { V2 } from "./math/v2";
+import { Target } from "./Target";
 
 const bones: BoneSequence = [
   { joint: { angle: 0 }, length: 2 },
@@ -15,7 +16,7 @@ const bones: BoneSequence = [
   { joint: { angle: 0.4 }, length: 2 },
 ];
 
-const base: V2 = [0, 0];
+const basePosition: V2 = [0, 0];
 
 function App() {
   const [targetPosition, setTargetPosition] = useState([500, 50] as V2);
@@ -35,8 +36,12 @@ function App() {
         orthographic
         linear
       >
-        <Base position={base} sequence={bones} target={targetPosition} />
-        <DebugForwardPass bones={bones} basePosition={base} />
+        <Base
+          position={basePosition}
+          sequence={bones}
+          target={targetPosition}
+        />
+        <DebugForwardPass bones={bones} basePosition={basePosition} />
         <Target position={targetPosition} />
       </Canvas>
     </div>
@@ -44,12 +49,3 @@ function App() {
 }
 
 export default App;
-
-export const Target = ({ position }: { position: V2 }) => {
-  return (
-    <mesh scale={[50, 50, 1]} position={[...position, 0]}>
-      <boxBufferGeometry />
-      <meshBasicMaterial color={"hotpink"} />
-    </mesh>
-  );
-};
