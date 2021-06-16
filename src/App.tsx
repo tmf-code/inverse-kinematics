@@ -1,11 +1,11 @@
 import { Canvas } from "@react-three/fiber";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Base } from "./components/Base";
 import { DebugForwardPass } from "./components/DebugForwardPass";
-import { distanceToTarget, IBone } from "./math/solver";
+import { IBone } from "./math/solver";
 import { V2 } from "./math/v2";
 import { Target } from "./components/Target";
-import { useAnimationFrame } from "./hooks/useAnimationFrame";
+import { Logger } from "./Logger";
 
 const bones: IBone[] = [
   { joint: { angle: 0 }, length: 50 },
@@ -55,39 +55,5 @@ function App() {
     </div>
   );
 }
-
-const Logger = ({
-  target,
-  bones,
-  basePosition,
-}: {
-  target: V2;
-  bones: IBone[];
-  basePosition: V2;
-}) => {
-  const distanceRef = useRef<HTMLTableCellElement>(null);
-
-  useAnimationFrame(1, () => {
-    if (!distanceRef.current) return;
-    distanceRef.current.innerText = distanceToTarget(
-      bones,
-      basePosition,
-      target
-    ).toFixed(3);
-  });
-
-  return (
-    <div style={{ position: "absolute", top: 0, left: 0, userSelect: "none" }}>
-      <table>
-        <tbody>
-          <tr>
-            <td>Distance</td>
-            <td ref={distanceRef}></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-};
 
 export default App;
