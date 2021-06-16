@@ -11,7 +11,7 @@ import {
   MeshNormalMaterial,
   Vector3,
 } from "three";
-import { IBone } from "./App";
+import { IBone } from "./math/solver";
 
 export const Bone = ({ joint, length, child }: IBone) => {
   const rotationRef = useRef<Group>();
