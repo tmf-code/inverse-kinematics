@@ -1,3 +1,4 @@
+import { clamp } from "./math";
 import { V2, V2O } from "./v2";
 
 type AtLeastOneOf<T> = [T, ...T[]];
@@ -10,6 +11,7 @@ export interface IBone {
 }
 interface IJoint {
   angle: number;
+  constraint?: number;
 }
 
 const deltaAngle = 0.00001;
@@ -39,7 +41,10 @@ export function solve(bones: BoneSequence, basePosition: V2, target: V2) {
 
     const boneWithDeltaAngle: Omit<IBone, "child"> = {
       ...bone,
-      joint: { angle: bone.joint.angle + deltaAngle },
+      joint: {
+        angle: bone.joint.angle + deltaAngle,
+        constraint: bone.joint.constraint,
+      },
     };
 
     const projectedBones: BoneSequence = [
@@ -79,6 +84,13 @@ export function solve(bones: BoneSequence, basePosition: V2, target: V2) {
     const gradient = (projectedError - error) / deltaAngle;
     bone.joint.angle -=
       gradient * adaptLearningRate(learningRate, projectedError);
+    if (bone.joint.constraint !== undefined) {
+      bone.joint.angle = clamp(
+        bone.joint.angle,
+        -bone.joint.constraint / 2,
+        bone.joint.constraint / 2
+      );
+    }
     // const nextAngle = bone.joint.angle - gradient * learningRate;
     // nextAngles.push(nextAngle);
   }
