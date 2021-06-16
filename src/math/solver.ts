@@ -81,11 +81,8 @@ export function solve(
     .forEach(({ joint, angleStep }) => {
       joint.angle += angleStep;
       if (joint.constraint === undefined) return;
-      joint.angle = clamp(
-        joint.angle,
-        -joint.constraint / 2,
-        joint.constraint / 2
-      );
+      const halfContraint = joint.constraint / 2;
+      joint.angle = clamp(joint.angle, -halfContraint, halfContraint);
     });
 }
 
