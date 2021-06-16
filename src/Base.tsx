@@ -8,9 +8,11 @@ import { V2 } from "./math/v2";
 export const Base = ({
   position,
   sequence,
+  target,
 }: {
   sequence: BoneSequence;
   position: V2;
+  target: V2;
 }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>();
   const chain = useMemo(() => makeChain(sequence), [sequence]);
@@ -18,7 +20,7 @@ export const Base = ({
   useFrame(() => {
     if (!ref.current) return;
     ref.current.position.set(...position, 0);
-    solve(sequence, position);
+    solve(sequence, position, target);
   });
 
   return (

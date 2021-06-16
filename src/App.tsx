@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Base } from "./Base";
 import { DebugForwardPass } from "./DebugForwardPass";
@@ -18,15 +18,26 @@ const bones: BoneSequence = [
 const base: V2 = [0, 0];
 
 function App() {
+  const [targetPosition, setTargetPosition] = useState([500, 50] as V2);
   return (
-    <div className="App">
+    <div
+      className="App"
+      onClick={(event) => {
+        const position = [
+          event.clientX - window.innerWidth / 2,
+          -event.clientY + window.innerHeight / 2,
+        ] as V2;
+        setTargetPosition(position);
+      }}
+    >
       <Canvas
         style={{ width: "100%", height: "100%", position: "absolute" }}
         orthographic
         linear
       >
-        <Base position={base} sequence={bones} />
+        <Base position={base} sequence={bones} target={targetPosition} />
         <DebugForwardPass bones={bones} basePosition={base} />
+        <Target position={targetPosition} />
       </Canvas>
     </div>
   );
@@ -34,4 +45,11 @@ function App() {
 
 export default App;
 
-
+export const Target = ({ position }: { position: V2 }) => {
+  return (
+    <mesh scale={[50, 50, 1]} position={[...position, 0]}>
+      <boxBufferGeometry />
+      <meshBasicMaterial color={"hotpink"} />
+    </mesh>
+  );
+};

@@ -12,7 +12,7 @@ interface IJoint {
   angle: number;
 }
 
-export function solve(bones: BoneSequence, basePosition: V2) {
+export function solve(bones: BoneSequence, basePosition: V2, target: V2) {
   for (let index = 0; index < bones.length; index++) {
     bones[index]!.joint.angle += 0.001;
   }
