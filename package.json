@@ -1,14 +1,20 @@
 {
-  "name": "ik",
+  "name": "inverse-kinematics",
   "version": "0.0.0",
   "author": "Jae Perris",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
     "typecheck": "tsc --noEmit && cd example && tsc --noEmit",
+    "prepublish": "npm run typecheck && npm run build",
     "eslint": "eslint --fix src/**/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmf-code/ik.git"
   },
   "license": "MIT",
   "homepage": "https://github.com/tmf-code/ik#readme",
