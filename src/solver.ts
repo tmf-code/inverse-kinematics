@@ -1,4 +1,4 @@
-import { clamp } from './MathUtils'
+import { clamp } from './math/MathUtils'
 import { V2, V2O } from '.'
 
 export interface Bone {
