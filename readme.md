@@ -1,6 +1,12 @@
 # IK - Inverse Kinematics
 
-Inverse kinematics for 2D and (soon) 3D applications.
+A typescript/javascript library for calculating inverse kinematics. Supports 2D and (soon) 3D applications.
+
+## Install
+
+```bash
+npm install inverse-kinematics
+```
 
 ## Quickstart 2D
 
