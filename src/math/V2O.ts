@@ -5,7 +5,7 @@ export const angle = ([x, y]: V2): number => {
   return Math.atan2(y, x)
 }
 
-export const VECTOR_LENGTH = 2
+const VECTOR_LENGTH = 2
 export const combine = (a: V2, b: V2, operation: (aElement: number, bElement: number) => number): V2 => {
   const result = new Array(VECTOR_LENGTH)
 
