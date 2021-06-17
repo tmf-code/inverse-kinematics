@@ -7,34 +7,29 @@ Inverse kinematics for 2D and (soon) 3D applications.
 https://codesandbox.io/s/quickstart-2d-ob7yw?file=/src/index.ts
 
 ```ts
-import { V2 } from 'inverse-kinematics'
-import { euclideanDistance } from 'inverse-kinematics/dist/math/V2O'
-import { Link, forwardPass, solve, Transform } from 'inverse-kinematics/dist/solve2d'
+import { V2, Solve2D } from 'inverse-kinematics'
 
-// Create a list of 'Links'
-// Three Links, of 50 units long, all pointing in the same direction
-const Links: Link[] = [
+// Create a list of 'links'
+// Three links, of 50 units long, all pointing in the same direction
+const bones: Solve2D.Link[] = [
   { rotation: 0, length: 50 },
   { rotation: 0, length: 50 },
   { rotation: 0, length: 50 },
 ]
 
-// Define the base of the Links
-const base: Transform = { position: [0, 0], rotation: 0 }
+// Define the base of the links
+const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
-// Define a target for the 'end effector' or the tip of the last Link to find
+// Define a target for the 'end effector' or the tip of the last link to move to
 const target: V2 = [50, 50]
 
 // Iterate until the error is within acceptable range
 const acceptedError = 10
 function loop() {
-  const { effectorPosition } = forwardPass(Links, base)
-
-  const error = euclideanDistance(target, effectorPosition)
-
+  const error = Solve2D.getErrorDistance(bones, base, target)
   if (error < acceptedError) return
 
-  solve(links, base.position, target)
+  Solve2D.solve(bones, base.position, target)
   setTimeout(loop, 100)
   console.log(error.toFixed(0))
 }
@@ -44,3 +39,27 @@ loop()
 ## Examples
 
 Check out https://tmf-code.github.io/inverse-kinematics or find them in the folder /example
+
+## Terminology
+
+### Base
+
+The starting point of the link chain
+
+### Link
+
+A `Link` can be thought of as a connecting bar, that extends from it's joint, to the joint of the next link in the chain.
+
+### Joint
+
+Occurs at the tip of the preceding link, and at the base of the following link. We've chosen to consider ownership of the joint to the following link. So that itself can be considered a `Base` to the remaining links.
+
+### Visulization of terminology
+
+You could visualize a link chain like so:
+
+```
+Base
+  -> rotate(link_1.rotation) [joint_1] -> translate(link_1.length)
+  -> rotate(link_2.rotation) [joint_2] -> translate(link_2.length)
+```
