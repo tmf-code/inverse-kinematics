@@ -1,7 +1,7 @@
 {
   "name": "example",
   "version": "0.0.0",
-  "homepage": "http://tmf-code.github.io/ik",
+  "homepage": "https://tmf-code.github.io/ik",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
