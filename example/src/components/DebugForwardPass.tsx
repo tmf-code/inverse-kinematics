@@ -1,7 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import React, { useRef } from "react";
-import { forwardPass, IBone } from "src/math/solver";
-import { V2 } from "src/math/v2";
+import { V2, forwardPass, IBone } from "ik";
 import { Group } from "three";
 
 export const DebugForwardPass = ({

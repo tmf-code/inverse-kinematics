@@ -1,4 +1,4 @@
-import { lerp, clamp } from "./math"
+import { lerp, clamp } from './math'
 
 export type V2 = readonly [x: number, y: number]
 
@@ -7,11 +7,7 @@ export class V2O {
     return Math.atan2(y, x)
   }
   static VECTOR_LENGTH = 2
-  static combine = (
-    a: V2,
-    b: V2,
-    operation: (aElement: number, bElement: number) => number
-  ): V2 => {
+  static combine = (a: V2, b: V2, operation: (aElement: number, bElement: number) => number): V2 => {
     const result = new Array(V2O.VECTOR_LENGTH)
 
     for (let index = 0; index < V2O.VECTOR_LENGTH; index++) {
@@ -26,13 +22,8 @@ export class V2O {
 
   static add = (a: V2, b: V2): V2 => V2O.combine(a, b, (a, b) => a + b)
 
-  static map = <T>(
-    vector: V2,
-    callback: (element: number, elementIndex: number, vector: V2) => T
-  ): [T, T] => {
-    return vector.map((value, index, array) =>
-      callback(value, index, array as V2)
-    ) as [T, T]
+  static map = <T>(vector: V2, callback: (element: number, elementIndex: number, vector: V2) => T): [T, T] => {
+    return vector.map((value, index, array) => callback(value, index, array as V2)) as [T, T]
   }
 
   static maxAbs = (vector: V2, max: number): V2 => {
@@ -52,34 +43,24 @@ export class V2O {
     return [Math.abs(a[0]), Math.abs(a[1])]
   }
 
-  static subtract = (base: V2, subtraction: V2): V2 =>
-    V2O.combine(base, subtraction, (a, b) => a - b)
+  static subtract = (base: V2, subtraction: V2): V2 => V2O.combine(base, subtraction, (a, b) => a - b)
 
-  static multiply = (base: V2, multiplier: V2): V2 =>
-    V2O.combine(base, multiplier, (a, b) => a * b)
+  static multiply = (base: V2, multiplier: V2): V2 => V2O.combine(base, multiplier, (a, b) => a * b)
 
   static dot = (a: V2, b: V2): number => a[0] * b[0] + a[1] * b[1]
 
   static lerp = (from: V2, to: V2, amount: number): V2 =>
-    V2O.combine(from, to, (fromElement, toElement) =>
-      lerp(fromElement, toElement, amount)
-    )
+    V2O.combine(from, to, (fromElement, toElement) => lerp(fromElement, toElement, amount))
 
-  static clamp = (value: V2, min: V2, max: V2): V2 => [
-    clamp(value[0], min[0], max[0]),
-    clamp(value[1], min[1], max[1]),
-  ]
+  static clamp = (value: V2, min: V2, max: V2): V2 => [clamp(value[0], min[0], max[0]), clamp(value[1], min[1], max[1])]
 
   static tangent = (vector: V2): V2 => [-vector[1], vector[0]]
 
-  static scale = (base: V2, factor: number): V2 =>
-    V2O.fromArray(base.map((element) => element * factor))
+  static scale = (base: V2, factor: number): V2 => V2O.fromArray(base.map((element) => element * factor))
 
-  static divideScalar = (base: V2, divisor: number): V2 =>
-    V2O.fromArray(base.map((element) => element / divisor))
+  static divideScalar = (base: V2, divisor: number): V2 => V2O.fromArray(base.map((element) => element / divisor))
 
-  static divide = (base: V2, divisor: V2): V2 =>
-    V2O.combine(base, divisor, (a, b) => a / b)
+  static divide = (base: V2, divisor: V2): V2 => V2O.combine(base, divisor, (a, b) => a / b)
 
   static normalise = (vector: V2): V2 => {
     const length = V2O.euclideanLength(vector)
@@ -89,11 +70,9 @@ export class V2O {
     return V2O.scale(vector, 1 / length)
   }
 
-  static sqrEuclideanLength = (vector: V2): number =>
-    vector[0] ** 2 + vector[1] ** 2
+  static sqrEuclideanLength = (vector: V2): number => vector[0] ** 2 + vector[1] ** 2
 
-  static euclideanLength = (vector: V2): number =>
-    V2O.sqrEuclideanLength(vector) ** 0.5
+  static euclideanLength = (vector: V2): number => V2O.sqrEuclideanLength(vector) ** 0.5
 
   static sqrEuclideanDistance = (a: V2, b: V2): number => {
     const distance = V2O.subtract(a, b)
@@ -123,9 +102,9 @@ export class V2O {
   static fromArray = (array: number[]): V2 => {
     if (array.length !== V2O.VECTOR_LENGTH)
       throw new Error(
-        `Cannot create V2 from ${array}, length is ${array.length}. Length should be ${V2O.VECTOR_LENGTH}`
+        `Cannot create V2 from ${array}, length is ${array.length}. Length should be ${V2O.VECTOR_LENGTH}`,
       )
-    return (array as unknown) as V2
+    return array as unknown as V2
   }
 
   static valueEquality = (a: V2, b: V2): boolean => {

@@ -2,10 +2,9 @@ import { Canvas } from "@react-three/fiber";
 import React, { useState } from "react";
 import { Base } from "./components/Base";
 import { DebugForwardPass } from "./components/DebugForwardPass";
-import { IBone } from "./math/solver";
-import { V2 } from "./math/v2";
+import { IBone, V2 } from "ik";
 import { Target } from "./components/Target";
-import { Logger } from "./Logger";
+import { Logger } from "./components/Logger";
 
 const bones: IBone[] = [
   { joint: { angle: 0 }, length: 50 },

@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { useAnimationFrame } from "src/hooks/useAnimationFrame";
-import { forwardPass, IBone } from "src/math/solver";
-import { V2, V2O } from "src/math/v2";
+import { forwardPass, IBone, V2, V2O } from "ik";
 
 export const Logger = ({
   target,

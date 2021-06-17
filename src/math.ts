@@ -4,17 +4,10 @@ export function lerp(from: number, to: number, amount: number): number {
   return from + (to - from) * amount
 }
 
-export const clamp = (value: number, min: number, max: number): number =>
-  Math.min(Math.max(min, value), max)
+export const clamp = (value: number, min: number, max: number): number => Math.min(Math.max(min, value), max)
 
-export function lerpTheta(
-  from: number,
-  to: number,
-  amount: number,
-  circleAt: number = Math.PI * 2
-) {
-  const removeLoops = (distance: number) =>
-    clamp(distance - Math.floor(distance / circleAt) * circleAt, 0, circleAt)
+export function lerpTheta(from: number, to: number, amount: number, circleAt: number = Math.PI * 2) {
+  const removeLoops = (distance: number) => clamp(distance - Math.floor(distance / circleAt) * circleAt, 0, circleAt)
 
   const distance = to - from
   const unloopedDistance = removeLoops(distance)
@@ -23,22 +16,14 @@ export function lerpTheta(
   return lerp(from, from + offset, amount)
 }
 
-export const valuesAreWithinDistance = (
-  valueA: number,
-  valueB: number,
-  delta: number
-) => {
+export const valuesAreWithinDistance = (valueA: number, valueB: number, delta: number) => {
   const highest = Math.max(valueA, valueB)
   const lowest = Math.min(valueA, valueB)
 
   return highest - delta < lowest
 }
 
-export const rotationsAreWithinAngle = (
-  rotationA: number,
-  rotationB: number,
-  angle: number
-) => {
+export const rotationsAreWithinAngle = (rotationA: number, rotationB: number, angle: number) => {
   const normalisedA = rotationA % (Math.PI * 2)
   const normalisedB = rotationB % (Math.PI * 2)
 

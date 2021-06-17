@@ -47,23 +47,11 @@ export class V3O {
   /**
    * @returns a / b
    */
-  static divide = (base: V3, divisor: V3): V3 => [
-    base[0] / divisor[0],
-    base[1] / divisor[1],
-    base[2] / divisor[2],
-  ]
+  static divide = (base: V3, divisor: V3): V3 => [base[0] / divisor[0], base[1] / divisor[1], base[2] / divisor[2]]
 
-  static scale = (base: V3, factor: number): V3 => [
-    base[0] * factor,
-    base[1] * factor,
-    base[2] * factor,
-  ]
+  static scale = (base: V3, factor: number): V3 => [base[0] * factor, base[1] * factor, base[2] * factor]
 
-  static sign = (vector: V3): V3 => [
-    Math.sign(vector[0]),
-    Math.sign(vector[1]),
-    Math.sign(vector[2]),
-  ]
+  static sign = (vector: V3): V3 => [Math.sign(vector[0]), Math.sign(vector[1]), Math.sign(vector[2])]
 
   static normalise = (vector: V3): V3 => {
     const length = V3O.euclideanLength(vector)
@@ -77,11 +65,9 @@ export class V3O {
   static extractXZ = (vector: V3): V2 => [vector[0], vector[2]]
   static extractYZ = (vector: V3): V2 => [vector[1], vector[2]]
 
-  static sqrEuclideanLength = (vector: V3): number =>
-    V3O.manhattanLength(V3O.multiply(vector, vector))
+  static sqrEuclideanLength = (vector: V3): number => V3O.manhattanLength(V3O.multiply(vector, vector))
 
-  static manhattanLength = (vector: V3): number =>
-    vector[0] + vector[1] + vector[2]
+  static manhattanLength = (vector: V3): number => vector[0] + vector[1] + vector[2]
 
   static dotProduct(a: V3, b: V3): number {
     const product = V3O.multiply(a, b)
@@ -99,8 +85,7 @@ export class V3O {
     return [x, y, z]
   }
 
-  static euclideanLength = (vector: V3): number =>
-    V3O.sqrEuclideanLength(vector) ** 0.5
+  static euclideanLength = (vector: V3): number => V3O.sqrEuclideanLength(vector) ** 0.5
 
   static sqrEuclideanDistance = (a: V3, b: V3): number => {
     const distance = V3O.subtract(a, b)
@@ -142,19 +127,14 @@ export class V3O {
   ]
 
   static random = (): V3 => [Math.random(), Math.random(), Math.random()]
-  static randomRange = (min: number, max: number): V3 =>
-    V3O.add(V3O.scale(V3O.random(), max - min), [min, min, min])
+  static randomRange = (min: number, max: number): V3 => V3O.add(V3O.scale(V3O.random(), max - min), [min, min, min])
   static fromArray = (array: number[]): V3 => {
     if (array.length !== V3O.VECTOR_LENGTH)
       throw new Error(
-        `Cannot create V3 from ${array}, length is ${array.length}. Length should be ${V3O.VECTOR_LENGTH}`
+        `Cannot create V3 from ${array}, length is ${array.length}. Length should be ${V3O.VECTOR_LENGTH}`,
       )
-    return (array as unknown) as V3
+    return array as unknown as V3
   }
 
-  static fromThree = (vector: ThreeVector3): V3 => [
-    vector.x,
-    vector.y,
-    vector.z,
-  ]
+  static fromThree = (vector: ThreeVector3): V3 => [vector.x, vector.y, vector.z]
 }

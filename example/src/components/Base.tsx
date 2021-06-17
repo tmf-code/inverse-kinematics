@@ -2,8 +2,7 @@ import { useFrame } from "@react-three/fiber";
 import React, { useMemo, useRef } from "react";
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from "three";
 import { Bone, BoneProps } from "./Bone";
-import { IBone, solve } from "src/math/solver";
-import { V2 } from "src/math/v2";
+import { IBone, solve, V2 } from "ik";
 
 export const Base = ({
   position,
