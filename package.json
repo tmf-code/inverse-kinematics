@@ -1,10 +1,13 @@
 {
   "name": "inverse-kinematics",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Jae Perris",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
