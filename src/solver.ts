@@ -27,7 +27,7 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
 
-  const acceptedError = options?.acceptedError ?? 10
+  const acceptedError = options?.acceptedError ?? 0
 
   // Precalculate joint positions
   const { transforms: joints, effectorPosition } = forwardPass(bones, {
