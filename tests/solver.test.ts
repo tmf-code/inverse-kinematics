@@ -78,22 +78,6 @@ describe('forwardPass', () => {
     ])
   })
 
-  it('Returns absolute transforms for chain', () => {
-    const bones: Bone[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-    ]
-    const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
-    const transforms = forwardPass(bones, pivotTransform).transforms
-
-    expect(transforms.length).toBe(3)
-    expect(transforms).toStrictEqual([
-      { position: [50, 0], rotation: 0 },
-      { position: [100, 0], rotation: 0 },
-      { position: [150, 0], rotation: 0 },
-    ])
-  })
-
   it('Returns absolute transforms for chain with bends', () => {
     const bones: Bone[] = [
       { rotation: 0, length: 50 },
