@@ -6,20 +6,32 @@ export interface Link {
    * The rotation at the base of the link
    */
   rotation: number
+  /**
+   * The the angle which this link can rotate around it's joint
+   * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
+   */
   readonly constraint?: number
   readonly length: number
 }
 
 export interface SolveOptions {
   /**
+   * Angle gap taken to calculate the gradient of the error function
+   * Usually the default here will do.
    * @default 0.00001
    */
   deltaAngle?: number
   /**
+   * Sets the 'speed' at which the algorithm converges on the target.
+   * Larger values will cause oscillations, or vibrations about the target
+   * Lower values may move too slowly. You should tune this manually
+   *
+   * Can either be a constant, or a function that returns a learning rate
    * @default 0.0001
    */
-  learningRate?: number
+  learningRate?: number | ((errorDistance: number) => number)
   /**
+   * Useful if there is oscillations or vibration around the target
    * @default 0
    */
   acceptedError?: number
@@ -72,7 +84,7 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
       const gradient = (projectedError - error) / deltaAngle
 
       // Get resultant angle step which minimizes error
-      const angleStep = -gradient * adaptLearningRate(learningRate, projectedError)
+      const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
 
       return { link, angleStep }
     })
@@ -84,24 +96,29 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
     })
 }
 
-function adaptLearningRate(baseLearningRate: number, distance: number): number {
-  return distance > 100 ? baseLearningRate : baseLearningRate * ((distance + 25) / 125)
-}
-
 export interface JointTransform {
   position: V2
   rotation: number
 }
 
+/**
+ * Distance from end effector to the target
+ */
 export function getErrorDistance(links: Link[], base: JointTransform, target: V2): number {
   const effectorPosition = getEndEffectorPosition(links, base)
   return V2O.euclideanDistance(target, effectorPosition)
 }
 
+/**
+ * Absolute position of the end effector (last links tip)
+ */
 export function getEndEffectorPosition(links: Link[], joint: JointTransform): V2 {
   return getJointTransforms(links, joint).effectorPosition
 }
 
+/**
+ * Returns the absolute position and rotation of each link
+ */
 export function getJointTransforms(
   links: Link[],
   joint: JointTransform,
