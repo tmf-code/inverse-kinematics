@@ -13,21 +13,19 @@ import {
 } from 'three'
 
 export interface BoneProps {
-  joint: {
-    angle: number
-  }
+  angle: number
   length: number
   child?: BoneProps
 }
 
-export const Bone = ({ joint, length, child }: BoneProps) => {
+export const Bone = ({ angle, length, child }: BoneProps) => {
   const rotationRef = useRef<Group>()
   const translationRef = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
 
   useFrame(() => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
-    rotationRef.current.rotation.set(0, 0, joint.angle)
+    rotationRef.current.rotation.set(0, 0, angle)
     translationRef.current.position.set(length, 0, 0)
   })
 

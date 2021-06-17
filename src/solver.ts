@@ -5,10 +5,10 @@ export interface Bone {
   /**
    * The joint that the bone rotates around
    */
-  readonly joint: {
-    angle: number
-    readonly constraint?: number
-  }
+
+  angle: number
+  readonly constraint?: number
+
   readonly length: number
 }
 
@@ -52,9 +52,7 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
     .map((bone, index) => {
       const boneWithDeltaAngle = {
         length: bone.length,
-        joint: {
-          angle: bone.joint.angle + deltaAngle,
-        },
+        angle: bone.angle + deltaAngle,
       }
 
       // Get bone chain from this bones pivot
@@ -69,13 +67,13 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
       // Get resultant angle step which minimizes error
       const angleStep = -gradient * adaptLearningRate(learningRate, projectedError)
 
-      return { joint: bone.joint, angleStep }
+      return { bone, angleStep }
     })
-    .forEach(({ joint, angleStep }) => {
-      joint.angle += angleStep
-      if (joint.constraint === undefined) return
-      const halfContraint = joint.constraint / 2
-      joint.angle = clamp(joint.angle, -halfContraint, halfContraint)
+    .forEach(({ bone, angleStep }) => {
+      bone.angle += angleStep
+      if (bone.constraint === undefined) return
+      const halfContraint = bone.constraint / 2
+      bone.angle = clamp(bone.angle, -halfContraint, halfContraint)
     })
 }
 
@@ -100,7 +98,7 @@ export function forwardPass(bones: Bone[], pivotTransform: Transform): ForwardPa
     const currentBone = bones[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = currentBone.joint.angle + parentTransform.rotation
+    const absoluteRotation = currentBone.angle + parentTransform.rotation
     const relativePosition = V2O.fromPolar(currentBone.length, absoluteRotation)
     const absolutePosition = V2O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })
