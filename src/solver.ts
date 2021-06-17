@@ -1,17 +1,15 @@
 import { clamp } from './math'
 import { V2, V2O } from './v2'
 
-export interface IBone {
+export interface Bone {
   /**
    * The joint that the bone rotates around
    */
-  readonly joint: IJoint
+  readonly joint: {
+    angle: number
+    readonly constraint?: number
+  }
   readonly length: number
-}
-
-interface IJoint {
-  angle: number
-  readonly constraint?: number
 }
 
 export interface SolveOptions {
@@ -24,7 +22,7 @@ export interface SolveOptions {
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each bone.joint.angle in bones
  */
-export function solve(bones: IBone[], basePosition: V2, target: V2, options?: SolveOptions) {
+export function solve(bones: Bone[], basePosition: V2, target: V2, options?: SolveOptions) {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -60,7 +58,7 @@ export function solve(bones: IBone[], basePosition: V2, target: V2, options?: So
       }
 
       // Get bone chain from this bones pivot
-      const projectedBones: IBone[] = [boneWithDeltaAngle, ...bones.slice(index + 1)]
+      const projectedBones: Bone[] = [boneWithDeltaAngle, ...bones.slice(index + 1)]
 
       // Get gradient from small change in pivot angle
       const pivotTransform = pivotTransforms[index]!
@@ -95,7 +93,7 @@ interface ForwardPass {
   effectorPosition: V2
 }
 
-export function forwardPass(bones: IBone[], pivotTransform: Transform): ForwardPass {
+export function forwardPass(bones: Bone[], pivotTransform: Transform): ForwardPass {
   const transforms = [pivotTransform]
 
   for (let index = 0; index < bones.length; index++) {

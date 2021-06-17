@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && cd example && tsc --noEmit",
     "eslint": "eslint --fix src/**/*.ts"
   },
   "license": "MIT",
