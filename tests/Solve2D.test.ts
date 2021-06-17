@@ -1,4 +1,5 @@
-import { forwardPass, Bone, solve, SolveOptions, Transform, V2, V2O } from '../src'
+import { V2, V2O } from '../src'
+import { forwardPass, Bone, solve, SolveOptions, Transform } from '../src/Solve2D'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {

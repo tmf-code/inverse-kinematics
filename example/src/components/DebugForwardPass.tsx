@@ -1,14 +1,14 @@
 import { useFrame } from '@react-three/fiber'
 import React, { useRef } from 'react'
-import { V2, forwardPass, Bone } from 'ik'
+import { V2, Solve2D } from 'ik'
 import { Group } from 'three'
 
-export const DebugForwardPass = ({ bones, basePosition }: { bones: Bone[]; basePosition: V2 }) => {
+export const DebugForwardPass = ({ bones, basePosition }: { bones: Solve2D.Bone[]; basePosition: V2 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = forwardPass(bones, {
+    const { transforms } = Solve2D.forwardPass(bones, {
       position: basePosition,
       rotation: 0,
     })

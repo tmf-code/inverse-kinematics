@@ -1,17 +1,17 @@
 import { useFrame } from '@react-three/fiber'
-import { Bone as IKBone, solve, V2 } from 'ik'
+import { Solve2D, V2 } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Bone, BoneProps } from './Bone'
 
-export const Base = ({ position, sequence, target }: { sequence: IKBone[]; position: V2; target: V2 }) => {
+export const Base = ({ position, sequence, target }: { sequence: Solve2D.Bone[]; position: V2; target: V2 }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
   const chain = useMemo(() => makeChain(sequence), [sequence])
 
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position, 0)
-    solve(sequence, position, target)
+    Solve2D.solve(sequence, position, target)
   })
 
   return (
@@ -23,7 +23,7 @@ export const Base = ({ position, sequence, target }: { sequence: IKBone[]; posit
   )
 }
 
-function makeChain(bones: IKBone[]): BoneProps | undefined {
+function makeChain(bones: Solve2D.Bone[]): BoneProps | undefined {
   let chain: BoneProps | undefined
   for (let index = bones.length - 1; index >= 0; index--) {
     const bone: BoneProps = { bone: bones[index]! }

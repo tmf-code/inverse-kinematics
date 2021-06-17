@@ -1,8 +1,8 @@
 import React, { useRef } from 'react'
 import { useAnimationFrame } from '../hooks/useAnimationFrame'
-import { forwardPass, Bone, V2, V2O } from 'ik'
+import { Solve2D, V2, V2O } from 'ik'
 
-export const Logger = ({ target, bones, basePosition }: { target: V2; bones: Bone[]; basePosition: V2 }) => {
+export const Logger = ({ target, bones, basePosition }: { target: V2; bones: Solve2D.Bone[]; basePosition: V2 }) => {
   const distanceRef = useRef<HTMLTableCellElement>(null)
 
   useAnimationFrame(1, () => {
@@ -24,8 +24,8 @@ export const Logger = ({ target, bones, basePosition }: { target: V2; bones: Bon
   )
 }
 
-export function distanceToTarget(bones: Bone[], basePosition: V2, target: V2) {
-  const { effectorPosition } = forwardPass(bones, {
+export function distanceToTarget(bones: Solve2D.Bone[], basePosition: V2, target: V2) {
+  const { effectorPosition } = Solve2D.forwardPass(bones, {
     position: basePosition,
     rotation: 0,
   })

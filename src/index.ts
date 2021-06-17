@@ -1,5 +1,5 @@
 export * as MathUtils from './math/MathUtils'
-export * from './solver'
+export * as Solve2D from './Solve2D'
 export * as V2O from './math/V2O'
 export * from './math/V2'
 export * from './math/V3'

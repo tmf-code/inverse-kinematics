@@ -2,11 +2,11 @@ import { Canvas } from '@react-three/fiber'
 import React, { useState } from 'react'
 import { Base } from './components/Base'
 import { DebugForwardPass } from './components/DebugForwardPass'
-import { Bone, V2 } from 'ik'
+import { Solve2D, V2 } from 'ik'
 import { Target } from './components/Target'
 import { Logger } from './components/Logger'
 
-const bones: Bone[] = [
+const bones: Solve2D.Bone[] = [
   { rotation: 0, length: 50 },
   { rotation: 0, constraint: Math.PI, length: 200 },
   { rotation: 0, constraint: Math.PI, length: 200 },
