@@ -1,4 +1,4 @@
-import { forwardPass, IBone, V2 } from '../src'
+import { forwardPass, IBone, solve, SolveOptions, Transform, V2, V2O } from '../src'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {
@@ -114,3 +114,62 @@ describe('forwardPass', () => {
     ])
   })
 })
+
+describe('solve', () => {
+  it('Runs with empty bones array', () => {
+    const bones: IBone[] = []
+    const bonesCopy = cloneDeep(bones)
+    solve(bones, [0, 0], [0, 0])
+
+    expect(bones).toStrictEqual<IBone[]>(bonesCopy)
+  })
+
+  it('Reduces distance to target each time it is called', () => {
+    const bones: IBone[] = [{ joint: { angle: 0 }, length: 50 }]
+    const target: V2 = [0, 50]
+
+    const base: Transform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidImprove(bones, base, target)
+    solveAndCheckDidImprove(bones, base, target)
+    solveAndCheckDidImprove(bones, base, target)
+  })
+
+  it('Reduces distance to target each time it is called with complex chain', () => {
+    const bones: IBone[] = [
+      { joint: { angle: 0 }, length: 50 },
+      { joint: { angle: 0 }, length: 50 },
+      { joint: { angle: 0 }, length: 50 },
+      { joint: { angle: 0 }, length: 50 },
+    ]
+    const target: V2 = [0, 50]
+
+    const base: Transform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidImprove(bones, base, target)
+    solveAndCheckDidImprove(bones, base, target)
+    solveAndCheckDidImprove(bones, base, target)
+  })
+})
+
+function cloneDeep<T>(object: T): T {
+  return JSON.parse(JSON.stringify(object))
+}
+
+function solveAndCheckDidImprove(bones: IBone[], base: Transform, target: V2) {
+  const options: SolveOptions = {
+    acceptedError: 0,
+  }
+
+  const effectorDistanceBefore = forwardPass(bones, base).effectorPosition
+  const errorBefore = V2O.euclideanDistanceV2(target, effectorDistanceBefore)
+
+  solve(bones, base.position, target, options)
+
+  const effectorDistanceAfter = forwardPass(bones, base).effectorPosition
+  const errorAfter = V2O.euclideanDistanceV2(target, effectorDistanceAfter)
+
+  expect(errorBefore).toBeGreaterThan(errorAfter)
+
+  return { errorBefore, errorAfter }
+}

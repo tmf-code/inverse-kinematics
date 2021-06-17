@@ -13,20 +13,18 @@ interface IJoint {
   angle: number
   readonly constraint?: number
 }
+
+export interface SolveOptions {
+  deltaAngle?: number
+  learningRate?: number
+  acceptedError?: number
+}
+
 /**
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each bone.joint.angle in bones
  */
-export function solve(
-  bones: IBone[],
-  basePosition: V2,
-  target: V2,
-  options?: {
-    deltaAngle?: number
-    learningRate?: number
-    acceptedError?: number
-  },
-) {
+export function solve(bones: IBone[], basePosition: V2, target: V2, options?: SolveOptions) {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -87,7 +85,7 @@ function adaptLearningRate(baseLearningRate: number, distance: number): number {
   return distance > 100 ? baseLearningRate : baseLearningRate * ((distance + 25) / 125)
 }
 
-interface Transform {
+export interface Transform {
   position: V2
   rotation: number
 }
