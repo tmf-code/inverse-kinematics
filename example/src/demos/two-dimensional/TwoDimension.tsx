@@ -1,27 +1,27 @@
 import { Canvas } from '@react-three/fiber'
+import { Solve2D, V2 } from 'ik'
 import React, { useState } from 'react'
 import { Base } from './components/Base'
 import { DebugForwardPass } from './components/DebugForwardPass'
-import { Solve2D, V2 } from 'ik'
-import { Target } from './components/Target'
 import { Logger } from './components/Logger'
+import { Target } from './components/Target'
 
-const bones: Solve2D.Bone[] = [
+const links: Solve2D.Link[] = [
   { rotation: 0, length: 50 },
   { rotation: 0, constraint: Math.PI, length: 200 },
   { rotation: 0, constraint: Math.PI, length: 200 },
   { rotation: 0, constraint: Math.PI, length: 200 },
 ]
 
-const basePosition: V2 = [0, 0]
+const base: V2 = [0, 0]
 
 function TwoDimension() {
-  const [targetPosition, setTargetPosition] = useState([500, 50] as V2)
+  const [target, setTarget] = useState([500, 50] as V2)
   return (
     <div
       onClick={(event) => {
         const position = [event.clientX - window.innerWidth / 2, -event.clientY + window.innerHeight / 2] as V2
-        setTargetPosition(position)
+        setTarget(position)
       }}
     >
       <Canvas
@@ -35,11 +35,11 @@ function TwoDimension() {
         linear
         camera={{ near: -1000 }}
       >
-        <Base position={basePosition} sequence={bones} target={targetPosition} />
-        <DebugForwardPass bones={bones} basePosition={basePosition} />
-        <Target position={targetPosition} />
+        <Base position={base} sequence={links} target={target} />
+        <DebugForwardPass links={links} basePosition={base} />
+        <Target position={target} />
       </Canvas>
-      <Logger target={targetPosition} bones={bones} basePosition={basePosition} />
+      <Logger target={target} links={links} basePosition={base} />
     </div>
   )
 }

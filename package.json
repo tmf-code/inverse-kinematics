@@ -1,6 +1,6 @@
 {
   "name": "inverse-kinematics",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Jae Perris",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
@@ -9,10 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "test": "jest --watch",
+    "test": "jest",
     "build": "tsc",
     "typecheck": "tsc --noEmit && cd example && tsc --noEmit",
-    "prepublish": "npm run typecheck && npm run build",
+    "prepublish": "npm run typecheck && npm run build && npm test",
     "eslint": "eslint --fix src/**/*.ts"
   },
   "repository": {

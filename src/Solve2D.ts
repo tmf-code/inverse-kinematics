@@ -1,14 +1,12 @@
 import { clamp } from './math/MathUtils'
 import { V2, V2O } from '.'
 
-export interface Bone {
+export interface Link {
   /**
-   * The joint that the bone rotates around
+   * The rotation at the base of the link
    */
-
   rotation: number
   readonly constraint?: number
-
   readonly length: number
 }
 
@@ -29,9 +27,9 @@ export interface SolveOptions {
 
 /**
  * Changes joint angle to minimize distance of end effector to target
- * Mutates each bone.joint.angle in bones
+ * Mutates each link.angle
  */
-export function solve(bones: Bone[], basePosition: V2, target: V2, options?: SolveOptions) {
+export function solve(links: Link[], basePosition: V2, target: V2, options?: SolveOptions) {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -39,17 +37,18 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
   const acceptedError = options?.acceptedError ?? 0
 
   // Precalculate joint positions
-  const { transforms: joints, effectorPosition } = forwardPass(bones, {
+  const { transforms: joints, effectorPosition } = getJointTransforms(links, {
     position: basePosition,
     rotation: 0,
   })
 
   const error = V2O.euclideanDistance(target, effectorPosition)
+
   if (error < acceptedError) return
 
-  if (joints.length !== bones.length + 1) {
+  if (joints.length !== links.length + 1) {
     throw new Error(
-      `Joint transforms should have the same length as bones + 1. Got ${joints.length}, expected ${bones.length}`,
+      `Joint transforms should have the same length as links + 1. Got ${joints.length}, expected ${links.length}`,
     )
   }
 
@@ -57,32 +56,31 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  bones
-    .map((bone, index) => {
-      const boneWithDeltaAngle = {
-        length: bone.length,
-        rotation: bone.rotation + deltaAngle,
+  links
+    .map((link, index) => {
+      const linkWithAngleDelta = {
+        length: link.length,
+        rotation: link.rotation + deltaAngle,
       }
 
-      // Get bone chain from this bones joint
-      const projectedBones: Bone[] = [boneWithDeltaAngle, ...bones.slice(index + 1)]
+      // Get remaining links from this links joint
+      const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(index + 1)]
 
       // Get gradient from small change in joint angle
       const joint = joints[index]!
-      const { effectorPosition } = forwardPass(projectedBones, joint)
-      const projectedError = V2O.euclideanDistance(target, effectorPosition)
+      const projectedError = getErrorDistance(projectedLinks, joint, target)
       const gradient = (projectedError - error) / deltaAngle
 
       // Get resultant angle step which minimizes error
       const angleStep = -gradient * adaptLearningRate(learningRate, projectedError)
 
-      return { bone, angleStep }
+      return { link, angleStep }
     })
-    .forEach(({ bone, angleStep }) => {
-      bone.rotation += angleStep
-      if (bone.constraint === undefined) return
-      const halfContraint = bone.constraint / 2
-      bone.rotation = clamp(bone.rotation, -halfContraint, halfContraint)
+    .forEach(({ link, angleStep }) => {
+      link.rotation += angleStep
+      if (link.constraint === undefined) return
+      const halfContraint = link.constraint / 2
+      link.rotation = clamp(link.rotation, -halfContraint, halfContraint)
     })
 }
 
@@ -90,25 +88,35 @@ function adaptLearningRate(baseLearningRate: number, distance: number): number {
   return distance > 100 ? baseLearningRate : baseLearningRate * ((distance + 25) / 125)
 }
 
-export interface Transform {
+export interface JointTransform {
   position: V2
   rotation: number
 }
 
-interface ForwardPass {
-  transforms: Transform[]
-  effectorPosition: V2
+export function getErrorDistance(links: Link[], base: JointTransform, target: V2): number {
+  const effectorPosition = getEndEffectorPosition(links, base)
+  return V2O.euclideanDistance(target, effectorPosition)
 }
 
-export function forwardPass(bones: Bone[], joint: Transform): ForwardPass {
+export function getEndEffectorPosition(links: Link[], joint: JointTransform): V2 {
+  return getJointTransforms(links, joint).effectorPosition
+}
+
+export function getJointTransforms(
+  links: Link[],
+  joint: JointTransform,
+): {
+  transforms: JointTransform[]
+  effectorPosition: V2
+} {
   const transforms = [joint]
 
-  for (let index = 0; index < bones.length; index++) {
-    const currentBone = bones[index]!
+  for (let index = 0; index < links.length; index++) {
+    const currentLink = links[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = currentBone.rotation + parentTransform.rotation
-    const relativePosition = V2O.fromPolar(currentBone.length, absoluteRotation)
+    const absoluteRotation = currentLink.rotation + parentTransform.rotation
+    const relativePosition = V2O.fromPolar(currentLink.length, absoluteRotation)
     const absolutePosition = V2O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })
   }

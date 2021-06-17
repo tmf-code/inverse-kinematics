@@ -1,14 +1,14 @@
 import { useFrame } from '@react-three/fiber'
+import { Solve2D, V2 } from 'ik'
 import React, { useRef } from 'react'
-import { V2, Solve2D } from 'ik'
 import { Group } from 'three'
 
-export const DebugForwardPass = ({ bones, basePosition }: { bones: Solve2D.Bone[]; basePosition: V2 }) => {
+export const DebugForwardPass = ({ links, basePosition }: { links: Solve2D.Link[]; basePosition: V2 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve2D.forwardPass(bones, {
+    const { transforms } = Solve2D.getJointTransforms(links, {
       position: basePosition,
       rotation: 0,
     })
@@ -24,7 +24,7 @@ export const DebugForwardPass = ({ bones, basePosition }: { bones: Solve2D.Bone[
 
   return (
     <group ref={ref}>
-      {Array.from({ length: bones.length + 1 }).map((_, index) => {
+      {Array.from({ length: links.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
             <boxBufferGeometry args={[12.5, 12.5]} />

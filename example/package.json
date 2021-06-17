@@ -1,7 +1,7 @@
 {
   "name": "example",
   "version": "0.0.0",
-  "homepage": "https://tmf-code.github.io/ik",
+  "homepage": "https://tmf-code.github.io/inverse-kinematics",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
