@@ -6,7 +6,7 @@ export interface Bone {
    * The joint that the bone rotates around
    */
 
-  angle: number
+  rotation: number
   readonly constraint?: number
 
   readonly length: number
@@ -52,7 +52,7 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
     .map((bone, index) => {
       const boneWithDeltaAngle = {
         length: bone.length,
-        angle: bone.angle + deltaAngle,
+        rotation: bone.rotation + deltaAngle,
       }
 
       // Get bone chain from this bones pivot
@@ -70,10 +70,10 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
       return { bone, angleStep }
     })
     .forEach(({ bone, angleStep }) => {
-      bone.angle += angleStep
+      bone.rotation += angleStep
       if (bone.constraint === undefined) return
       const halfContraint = bone.constraint / 2
-      bone.angle = clamp(bone.angle, -halfContraint, halfContraint)
+      bone.rotation = clamp(bone.rotation, -halfContraint, halfContraint)
     })
 }
 
@@ -91,14 +91,14 @@ interface ForwardPass {
   effectorPosition: V2
 }
 
-export function forwardPass(bones: Bone[], pivotTransform: Transform): ForwardPass {
-  const transforms = [pivotTransform]
+export function forwardPass(bones: Bone[], joint: Transform): ForwardPass {
+  const transforms = [joint]
 
   for (let index = 0; index < bones.length; index++) {
     const currentBone = bones[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = currentBone.angle + parentTransform.rotation
+    const absoluteRotation = currentBone.rotation + parentTransform.rotation
     const relativePosition = V2O.fromPolar(currentBone.length, absoluteRotation)
     const absolutePosition = V2O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })

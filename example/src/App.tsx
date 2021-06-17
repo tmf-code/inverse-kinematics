@@ -7,10 +7,10 @@ import { Target } from './components/Target'
 import { Logger } from './components/Logger'
 
 const bones: Bone[] = [
-  { angle: 0, length: 50 },
-  { angle: 0, constraint: Math.PI, length: 200 },
-  { angle: 0, constraint: Math.PI, length: 200 },
-  { angle: 0, constraint: Math.PI, length: 200 },
+  { rotation: 0, length: 50 },
+  { rotation: 0, constraint: Math.PI, length: 200 },
+  { rotation: 0, constraint: Math.PI, length: 200 },
+  { rotation: 0, constraint: Math.PI, length: 200 },
 ]
 
 const basePosition: V2 = [0, 0]

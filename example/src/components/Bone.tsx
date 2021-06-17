@@ -13,7 +13,7 @@ import {
 } from 'three'
 
 export interface BoneProps {
-  bone: { angle: number; length: number }
+  bone: { rotation: number; length: number }
   child?: BoneProps
 }
 
@@ -24,7 +24,7 @@ export const Bone = ({ bone, child }: BoneProps) => {
   useFrame(() => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
-    rotationRef.current.rotation.set(0, 0, bone.angle)
+    rotationRef.current.rotation.set(0, 0, bone.rotation)
     translationRef.current.position.set(bone.length, 0, 0)
   })
 

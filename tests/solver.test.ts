@@ -10,7 +10,7 @@ describe('forwardPass', () => {
   })
 
   it('Returns end effector position', () => {
-    const bones: Bone[] = [{ angle: 0, length: 50 }]
+    const bones: Bone[] = [{ rotation: 0, length: 50 }]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = forwardPass(bones, pivotTransform).effectorPosition
 
@@ -19,10 +19,10 @@ describe('forwardPass', () => {
 
   it('Returns end effector position after long chain', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
     ]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = forwardPass(bones, pivotTransform).effectorPosition
@@ -31,7 +31,7 @@ describe('forwardPass', () => {
   })
 
   it('Returns end effector position after bend', () => {
-    const bones: Bone[] = [{ angle: Math.PI / 2, length: 50 }]
+    const bones: Bone[] = [{ rotation: Math.PI / 2, length: 50 }]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = forwardPass(bones, pivotTransform).effectorPosition
 
@@ -41,10 +41,10 @@ describe('forwardPass', () => {
 
   it('Returns end effector position chain with bends', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: Math.PI / 2, length: 50 },
-      { angle: -Math.PI / 2, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: Math.PI / 2, length: 50 },
+      { rotation: -Math.PI / 2, length: 50 },
     ]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = forwardPass(bones, pivotTransform).effectorPosition
@@ -64,8 +64,8 @@ describe('forwardPass', () => {
 
   it('Returns absolute transforms for chain', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
     ]
     const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
     const transforms = forwardPass(bones, pivotTransform).transforms
@@ -80,8 +80,8 @@ describe('forwardPass', () => {
 
   it('Returns absolute transforms for chain', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
     ]
     const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
     const transforms = forwardPass(bones, pivotTransform).transforms
@@ -96,10 +96,10 @@ describe('forwardPass', () => {
 
   it('Returns absolute transforms for chain with bends', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: Math.PI / 2, length: 50 },
-      { angle: -Math.PI / 2, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: Math.PI / 2, length: 50 },
+      { rotation: -Math.PI / 2, length: 50 },
     ]
     const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
     const transforms = forwardPass(bones, pivotTransform).transforms
@@ -125,7 +125,7 @@ describe('solve', () => {
   })
 
   it('Reduces distance to target each time it is called', () => {
-    const bones: Bone[] = [{ angle: 0, length: 50 }]
+    const bones: Bone[] = [{ rotation: 0, length: 50 }]
     const target: V2 = [0, 50]
 
     const base: Transform = { position: [0, 0], rotation: 0 }
@@ -137,10 +137,10 @@ describe('solve', () => {
 
   it('Reduces distance to target each time it is called with complex chain', () => {
     const bones: Bone[] = [
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
-      { angle: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
+      { rotation: 0, length: 50 },
     ]
     const target: V2 = [0, 50]
 
