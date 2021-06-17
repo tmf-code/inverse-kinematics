@@ -1,0 +1,8 @@
+src
+example
+.eslintignore
+.eslintrc.js
+.gitignore
+.git
+tsconfig.json
+jest.config.js
