@@ -1,10 +1,17 @@
 {
   "name": "inverse-kinematics",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "Jae Perris",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "keywords": [
+    "2D",
+    "inverse kinematics",
+    "forward kinematics",
+    "ik",
+    "3D"
+  ],
   "files": [
     "dist"
   ],
