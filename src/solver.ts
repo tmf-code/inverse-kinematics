@@ -29,8 +29,8 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
 
   const acceptedError = options?.acceptedError ?? 10
 
-  // Precalculate pivot positions
-  const { transforms: pivotTransforms, effectorPosition } = forwardPass(bones, {
+  // Precalculate joint positions
+  const { transforms: joints, effectorPosition } = forwardPass(bones, {
     position: basePosition,
     rotation: 0,
   })
@@ -38,9 +38,9 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
   const error = V2O.euclideanDistanceV2(target, effectorPosition)
   if (error < acceptedError) return
 
-  if (pivotTransforms.length !== bones.length + 1) {
+  if (joints.length !== bones.length + 1) {
     throw new Error(
-      `Pivot transforms should have the same length as bones + 1. Got ${pivotTransforms.length}, expected ${bones.length}`,
+      `Joint transforms should have the same length as bones + 1. Got ${joints.length}, expected ${bones.length}`,
     )
   }
 
@@ -55,12 +55,12 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
         rotation: bone.rotation + deltaAngle,
       }
 
-      // Get bone chain from this bones pivot
+      // Get bone chain from this bones joint
       const projectedBones: Bone[] = [boneWithDeltaAngle, ...bones.slice(index + 1)]
 
-      // Get gradient from small change in pivot angle
-      const pivotTransform = pivotTransforms[index]!
-      const { effectorPosition } = forwardPass(projectedBones, pivotTransform)
+      // Get gradient from small change in joint angle
+      const joint = joints[index]!
+      const { effectorPosition } = forwardPass(projectedBones, joint)
       const projectedError = V2O.euclideanDistanceV2(target, effectorPosition)
       const gradient = (projectedError - error) / deltaAngle
 
