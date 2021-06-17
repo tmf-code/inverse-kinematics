@@ -1,8 +1,14 @@
 src
 example
+
+.prettierrc.js
 .eslintignore
 .eslintrc.js
+
 .gitignore
 .git
+
 tsconfig.json
+
+tests
 jest.config.js
