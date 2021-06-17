@@ -5,19 +5,22 @@
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watch",
     "build": "tsc",
-    "lint": "tsc --noEmit && eslint \"src/**/*.ts\" --quiet --fix"
+    "typecheck": "tsc --noEmit",
+    "eslint": "eslint --fix src/**/*.ts"
   },
   "license": "MIT",
   "homepage": "https://github.com/tmf-code/ik#readme",
   "devDependencies": {
+    "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.27.0",
     "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
     "prettier": "^2.3.1",
+    "ts-jest": "^27.0.3",
     "typescript": "^4.3.3"
   }
 }

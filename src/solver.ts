@@ -30,6 +30,7 @@ export function solve(
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
+
   const acceptedError = options?.acceptedError ?? 10
 
   // Precalculate pivot positions
