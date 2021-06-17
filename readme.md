@@ -63,3 +63,56 @@ Base
   -> rotate(link_1.rotation) [joint_1] -> translate(link_1.length)
   -> rotate(link_2.rotation) [joint_2] -> translate(link_2.length)
 ```
+
+## Tuning & Algorithm
+
+Currently this package supports gradient descent. Soon it will also support a CCD approach.
+
+The algorithm is quite simple. You can find it in `src/Solve2D.ts`. Available parameters to tune with are:
+
+```ts
+interface SolveOptions {
+  /**
+   * Angle gap taken to calculate the gradient of the error function
+   * Usually the default here will do.
+   * @default 0.00001
+   */
+  deltaAngle?: number
+  /**
+   * Sets the 'speed' at which the algorithm converges on the target.
+   * Larger values will cause oscillations, or vibrations about the target
+   * Lower values may move too slowly. You should tune this manually
+   *
+   * Can either be a constant, or a function that returns a learning rate
+   * @default 0.0001
+   */
+  learningRate?: number | ((errorDistance: number) => number)
+  /**
+   * Useful if there is oscillations or vibration around the target
+   * @default 0
+   */
+  acceptedError?: number
+}
+```
+
+To get good results, you should manually tune the accepted error, which stops solving once it is reached, and adjust the learning rate.
+
+The learning rate can either be a constant or a function. An example learning rate function could be
+
+```ts
+const knownRangeOfMovement = 200
+function learningRate(errorDistance): number {
+  const relativeDistanceToTarget = clamp(errorDistance / knownRangeOfMovement, 0, 1)
+  const cutoff = 0.02
+
+  if (relativeDistanceToTarget > cutoff) {
+    return 10e-4
+  }
+
+  // result is between 0 and 1
+  const remainingDistance = relativeDistanceToTarget / 0.02
+  const minimumLearningRate = 10e-5
+
+  return minimumLearningRate + remainingDistance * errorDistance
+}
+```
