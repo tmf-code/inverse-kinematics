@@ -162,12 +162,12 @@ function solveAndCheckDidImprove(bones: Bone[], base: Transform, target: V2) {
   }
 
   const effectorDistanceBefore = forwardPass(bones, base).effectorPosition
-  const errorBefore = V2O.euclideanDistanceV2(target, effectorDistanceBefore)
+  const errorBefore = V2O.euclideanDistance(target, effectorDistanceBefore)
 
   solve(bones, base.position, target, options)
 
   const effectorDistanceAfter = forwardPass(bones, base).effectorPosition
-  const errorAfter = V2O.euclideanDistanceV2(target, effectorDistanceAfter)
+  const errorAfter = V2O.euclideanDistance(target, effectorDistanceAfter)
 
   expect(errorBefore).toBeGreaterThan(errorAfter)
 

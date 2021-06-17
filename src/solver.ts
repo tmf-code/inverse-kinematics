@@ -1,5 +1,5 @@
-import { clamp } from './math'
-import { V2, V2O } from './v2'
+import { clamp } from './MathUtils'
+import { V2, V2O } from '.'
 
 export interface Bone {
   /**
@@ -35,7 +35,7 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
     rotation: 0,
   })
 
-  const error = V2O.euclideanDistanceV2(target, effectorPosition)
+  const error = V2O.euclideanDistance(target, effectorPosition)
   if (error < acceptedError) return
 
   if (joints.length !== bones.length + 1) {
@@ -61,7 +61,7 @@ export function solve(bones: Bone[], basePosition: V2, target: V2, options?: Sol
       // Get gradient from small change in joint angle
       const joint = joints[index]!
       const { effectorPosition } = forwardPass(projectedBones, joint)
-      const projectedError = V2O.euclideanDistanceV2(target, effectorPosition)
+      const projectedError = V2O.euclideanDistance(target, effectorPosition)
       const gradient = (projectedError - error) / deltaAngle
 
       // Get resultant angle step which minimizes error

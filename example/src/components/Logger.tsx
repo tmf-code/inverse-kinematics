@@ -29,5 +29,5 @@ export function distanceToTarget(bones: Bone[], basePosition: V2, target: V2) {
     position: basePosition,
     rotation: 0,
   })
-  return V2O.euclideanDistanceV2(target, effectorPosition)
+  return V2O.euclideanDistance(target, effectorPosition)
 }

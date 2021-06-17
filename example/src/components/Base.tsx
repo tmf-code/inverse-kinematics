@@ -1,9 +1,8 @@
 import { useFrame } from '@react-three/fiber'
+import { Bone as IKBone, solve, V2 } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Bone, BoneProps } from './Bone'
-import { Bone as IKBone, solve, V2 } from 'ik'
-import { useAnimationFrame } from '../hooks/useAnimationFrame'
 
 export const Base = ({ position, sequence, target }: { sequence: IKBone[]; position: V2; target: V2 }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
