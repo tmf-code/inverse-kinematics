@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { useAnimationFrame } from '../hooks/useAnimationFrame'
+import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
 import { Solve2D, V2, V2O } from 'ik'
 
 export const Logger = ({ target, bones, basePosition }: { target: V2; bones: Solve2D.Bone[]; basePosition: V2 }) => {
