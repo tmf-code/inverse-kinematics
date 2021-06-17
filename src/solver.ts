@@ -13,8 +13,17 @@ export interface Bone {
 }
 
 export interface SolveOptions {
+  /**
+   * @default 0.00001
+   */
   deltaAngle?: number
+  /**
+   * @default 0.0001
+   */
   learningRate?: number
+  /**
+   * @default 0
+   */
   acceptedError?: number
 }
 
