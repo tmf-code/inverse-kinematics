@@ -101,13 +101,13 @@ interface SolveOptions {
 }
 ```
 
-To get good results, you should manually tune the accepted error, which stops solving once it is reached, and adjust the learning rate.
+For good results manually tune the accepted error and the learning rate.
 
 The learning rate can either be a constant or a function. An example learning rate function could be
 
 ```ts
 const knownRangeOfMovement = 200
-function learningRate(errorDistance): number {
+function learningRate(errorDistance: number): number {
   const relativeDistanceToTarget = clamp(errorDistance / knownRangeOfMovement, 0, 1)
   const cutoff = 0.02
 
