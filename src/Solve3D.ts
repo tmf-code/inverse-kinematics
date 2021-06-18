@@ -108,11 +108,10 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
     .forEach(({ link, angleStep }) => {
       link.rotation = QuaternionO.multiply(link.rotation, angleStep)
       if (link.constraints === undefined) return
-      const bounds: V3 = [
-        link.constraints.pitch ?? Infinity,
-        link.constraints.yaw ?? Infinity,
-        link.constraints.roll ?? Infinity,
-      ]
+      const bounds: V3 = V3O.scale(
+        [link.constraints.pitch ?? Infinity, link.constraints.yaw ?? Infinity, link.constraints.roll ?? Infinity],
+        1 / 2,
+      )
       link.rotation = QuaternionO.clamp(link.rotation, bounds)
     })
 }
