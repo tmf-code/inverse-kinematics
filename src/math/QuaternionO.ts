@@ -1,5 +1,7 @@
+import * as V3O from './V3O'
 import { Quaternion } from './Quaternion'
 import { V3 } from './V3'
+import * as MathUtils from './MathUtils'
 
 export const multiply = (a: Quaternion, b: Quaternion): Quaternion => {
   const qax = a[1]
@@ -44,3 +46,22 @@ export const conjugate = (quaternion: Quaternion): Quaternion => {
 }
 
 export const zeroRotation = (): Quaternion => [1, 0, 0, 0]
+
+export const normalize = (quaternion: Quaternion): Quaternion => {
+  const length = Math.hypot(...quaternion)
+  if (length === 0) return zeroRotation()
+  return [quaternion[0] / length, quaternion[1] / length, quaternion[2] / length, quaternion[3] / length]
+}
+
+export const clamp = (quaternion: Quaternion, bounds: V3): Quaternion => {
+  const [w, ...rotationAxis] = quaternion
+
+  const [x, y, z] = V3O.fromArray(
+    rotationAxis.map((component, index) => {
+      const angle = 2 * Math.atan(component / w)
+      const clampedAngle = MathUtils.clamp(angle, -bounds[index]!, bounds[index]!)
+      return Math.tan(0.5 * clampedAngle)
+    }),
+  )
+  return normalize([1, x, y, z])
+}

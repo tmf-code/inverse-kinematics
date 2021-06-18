@@ -8,12 +8,11 @@ import { Logger } from './components/Logger'
 import { Target } from './components/Target'
 
 const links: Solve3D.Link[] = [
-  { rotation: QuaternionO.zeroRotation(), length: 50 },
-  { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), constraint: Math.PI, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
+  { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), constraints: { pitch: 0, yaw: 0 }, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), length: 200 },
 ]
 
 const base: V3 = [0, 0, 0]

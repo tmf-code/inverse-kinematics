@@ -11,8 +11,14 @@ export interface Link {
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
    */
-  readonly constraint?: number
+  readonly constraints?: Constraints
   readonly length: number
+}
+
+export interface Constraints {
+  pitch?: number
+  yaw?: number
+  roll?: number
 }
 
 export interface SolveOptions {
@@ -101,10 +107,13 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
     })
     .forEach(({ link, angleStep }) => {
       link.rotation = QuaternionO.multiply(link.rotation, angleStep)
-      if (link.constraint === undefined) return
-      // TODO
-      // const halfContraint = link.constraint / 2
-      // link.rotation = clamp(link.rotation, -halfContraint, halfContraint)
+      if (link.constraints === undefined) return
+      const bounds: V3 = [
+        link.constraints.pitch ?? Infinity,
+        link.constraints.yaw ?? Infinity,
+        link.constraints.roll ?? Infinity,
+      ]
+      link.rotation = QuaternionO.clamp(link.rotation, bounds)
     })
 }
 
