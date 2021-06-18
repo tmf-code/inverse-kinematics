@@ -27,7 +27,7 @@ export const DebugForwardPass = ({ links, basePosition }: { links: Solve3D.Link[
       {Array.from({ length: links.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
-            <boxBufferGeometry args={[12.5, 12.5]} />
+            <boxBufferGeometry args={[12.5, 12.5, 12.5]} />
             <meshBasicMaterial color={'red'} />
           </mesh>
         )

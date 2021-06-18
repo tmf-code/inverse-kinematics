@@ -11,7 +11,7 @@ export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[];
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position)
-    Solve3D.solve(sequence, position, target)
+    Solve3D.solve(sequence, position, target, { acceptedError: 20 })
   })
 
   return (

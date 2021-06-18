@@ -2,12 +2,21 @@ import { Quaternion } from './Quaternion'
 import { V3 } from './V3'
 
 export const multiply = (a: Quaternion, b: Quaternion): Quaternion => {
-  const r = a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3]
-  const x = a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2]
-  const y = a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1]
-  const z = a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0]
+  const qax = a[1]
+  const qay = a[2]
+  const qaz = a[3]
+  const qaw = a[0]
+  const qbx = b[1]
+  const qby = b[2]
+  const qbz = b[3]
+  const qbw = b[0]
 
-  return [r, x, y, z]
+  return [
+    qaw * qbw - qax * qbx - qay * qby - qaz * qbz,
+    qax * qbw + qaw * qbx + qay * qbz - qaz * qby,
+    qay * qbw + qaw * qby + qaz * qbx - qax * qbz,
+    qaz * qbw + qaw * qbz + qax * qby - qay * qbx,
+  ]
 }
 
 export const fromEulerAngles = ([x, y, z]: V3): Quaternion => {

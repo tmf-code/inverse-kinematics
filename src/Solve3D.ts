@@ -76,13 +76,13 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
         [0, 0, 0].map((_, v3Index) => {
           const eulerAngle = [0, 0, 0]
           eulerAngle[v3Index] = deltaAngle
-          const linkWithAngleDeltaX = {
+          const linkWithAngleDelta = {
             length: link.length,
             rotation: QuaternionO.multiply(link.rotation, QuaternionO.fromEulerAngles(V3O.fromArray(eulerAngle))),
           }
 
           // Get remaining links from this links joint
-          const projectedLinks: Link[] = [linkWithAngleDeltaX, ...links.slice(linkIndex + 1)]
+          const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(linkIndex + 1)]
 
           // Get gradient from small change in joint angle
           const joint = joints[linkIndex]!
@@ -144,7 +144,7 @@ export function getJointTransforms(
     const currentLink = links[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = QuaternionO.multiply(currentLink.rotation, parentTransform.rotation)
+    const absoluteRotation = QuaternionO.multiply(parentTransform.rotation, currentLink.rotation)
     const relativePosition = V3O.fromPolar(currentLink.length, absoluteRotation)
     const absolutePosition = V3O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })

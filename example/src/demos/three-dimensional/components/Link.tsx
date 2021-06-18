@@ -10,7 +10,6 @@ import {
   LineBasicMaterial,
   Mesh,
   MeshNormalMaterial,
-  Quaternion as ThreeQuaternion,
   Vector3,
 } from 'three'
 
@@ -26,9 +25,7 @@ export const Link = ({ link, child }: LinkProps) => {
   useFrame(() => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
-    rotationRef.current.rotation.setFromQuaternion(
-      new ThreeQuaternion(link.rotation[1], link.rotation[2], link.rotation[3], link.rotation[0]),
-    )
+    rotationRef.current.quaternion.set(link.rotation[1], link.rotation[2], link.rotation[3], link.rotation[0])
     translationRef.current.position.set(link.length, 0, 0)
   })
 

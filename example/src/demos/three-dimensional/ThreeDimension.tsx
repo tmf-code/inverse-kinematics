@@ -12,6 +12,8 @@ const links: Solve3D.Link[] = [
   { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), constraint: Math.PI, length: 200 },
   { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
   { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
+  { rotation: QuaternionO.zeroRotation(), constraint: Math.PI, length: 200 },
 ]
 
 const base: V3 = [0, 0, 0]
@@ -21,7 +23,11 @@ function ThreeDimension() {
   return (
     <div
       onClick={(event) => {
-        const position = [event.clientX - window.innerWidth / 2, -event.clientY + window.innerHeight / 2, 0] as V3
+        const position = [
+          event.clientX - window.innerWidth / 2,
+          -event.clientY + window.innerHeight / 2,
+          Math.random() * 500,
+        ] as V3
         setTarget(position)
       }}
     >
