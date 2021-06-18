@@ -7,15 +7,29 @@ import { DebugForwardPass } from './components/DebugForwardPass'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
 
-const links: Solve3D.Link[] = [
-  { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), constraints: { pitch: 0, yaw: 0 }, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), constraints: { pitch: 0, yaw: 0 }, length: 200 },
-  { rotation: QuaternionO.zeroRotation(), length: 200 },
-]
+const shoulder: V3 = [0, 0, 0]
 
-const base: V3 = [0, 0, 0]
+const shoulderToElbow: Solve3D.Link = {
+  length: 100,
+  rotation: QuaternionO.zeroRotation(),
+  constraints: { roll: 0, yaw: Math.PI, pitch: Math.PI * 1.1 },
+}
+
+const elbowToWrist: Solve3D.Link = {
+  length: 100,
+  rotation: QuaternionO.zeroRotation(),
+  constraints: { roll: Math.PI / 2, yaw: (5 * Math.PI) / 6, pitch: 0 },
+}
+
+const wristToIndexTip: Solve3D.Link = {
+  length: 30,
+  rotation: QuaternionO.zeroRotation(),
+  constraints: { roll: 0, yaw: 0, pitch: (3 * Math.PI) / 2 },
+}
+
+const links: Solve3D.Link[] = [shoulderToElbow, elbowToWrist, wristToIndexTip]
+
+const base: V3 = shoulder
 
 function ThreeDimension() {
   const [target, setTarget] = useState([500, 50, 0] as V3)
