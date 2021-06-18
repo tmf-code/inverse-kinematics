@@ -1,12 +1,8 @@
 import * as MathUtils from './MathUtils'
+import { Quaternion } from './Quaternion'
+import * as QuaternionO from './QuaternionO'
 import { V2 } from './V2'
 import { V3 } from './V3'
-
-type ThreeVector3 = {
-  x: number
-  y: number
-  z: number
-}
 
 const VECTOR_LENGTH = 3
 
@@ -62,9 +58,7 @@ export const normalise = (vector: V3): V3 => {
 export const extractXY = (vector: V3): V2 => [vector[0], vector[1]]
 export const extractXZ = (vector: V3): V2 => [vector[0], vector[2]]
 export const extractYZ = (vector: V3): V2 => [vector[1], vector[2]]
-
 export const sqrEuclideanLength = (vector: V3): number => manhattanLength(multiply(vector, vector))
-
 export const manhattanLength = (vector: V3): number => vector[0] + vector[1] + vector[2]
 
 export const dotProduct = (a: V3, b: V3): number => {
@@ -132,4 +126,12 @@ export const fromArray = (array: number[]): V3 => {
   return array as unknown as V3
 }
 
-export const fromThree = (vector: ThreeVector3): V3 => [vector.x, vector.y, vector.z]
+export const fromVector3 = (vector: { x: number; y: number; z: number }): V3 => [vector.x, vector.y, vector.z]
+export const rotate = (vector: V3, rotation: Quaternion): V3 => {
+  const conjugate = QuaternionO.conjugate(rotation)
+  const intermediate = QuaternionO.multiply(rotation, [0, ...vector])
+  const [, ...result] = QuaternionO.multiply(intermediate, conjugate)
+  return result
+}
+
+export const fromPolar = (radius: number, angle: Quaternion): V3 => rotate([radius, 0, 0], angle)

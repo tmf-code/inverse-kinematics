@@ -1,6 +1,7 @@
 import React from 'react'
-import TwoDimension from './demos/two-dimensional/TwoDimension'
 import { HashRouter, Link, Route } from 'react-router-dom'
+import ThreeDimension from './demos/three-dimensional/ThreeDimension'
+import TwoDimension from './demos/two-dimensional/TwoDimension'
 
 function App() {
   return (
@@ -9,7 +10,9 @@ function App() {
       <Route path="/2d">
         <TwoDimension />
       </Route>
-      <Route path="/3d">Three D Demo yet to be implemented</Route>
+      <Route path="/3d">
+        <ThreeDimension />
+      </Route>
     </HashRouter>
   )
 }

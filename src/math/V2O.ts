@@ -1,11 +1,8 @@
 import * as MathUtils from './MathUtils'
 import { V2 } from './V2'
 
-export const angle = ([x, y]: V2): number => {
-  return Math.atan2(y, x)
-}
-
 const VECTOR_LENGTH = 2
+
 export const combine = (a: V2, b: V2, operation: (aElement: number, bElement: number) => number): V2 => {
   const result = new Array(VECTOR_LENGTH)
 
@@ -19,12 +16,11 @@ export const combine = (a: V2, b: V2, operation: (aElement: number, bElement: nu
   return fromArray(result)
 }
 
+export const angle = ([x, y]: V2): number => Math.atan2(y, x)
 export const add = (a: V2, b: V2): V2 => combine(a, b, (a, b) => a + b)
-
 export const map = <T>(vector: V2, callback: (element: number, elementIndex: number, vector: V2) => T): [T, T] => {
   return vector.map((value, index, array) => callback(value, index, array as V2)) as [T, T]
 }
-
 export const maxAbs = (vector: V2, max: number): V2 => {
   const isClipped = max * max < sqrEuclideanLength(vector)
   if (!isClipped) return [...vector]
@@ -33,21 +29,11 @@ export const maxAbs = (vector: V2, max: number): V2 => {
   const maxVector = scale(normalised, max)
   return maxVector
 }
-
-export const maxElement = (a: V2): number => {
-  return Math.max(...a)
-}
-
-export const abs = (a: V2): V2 => {
-  return [Math.abs(a[0]), Math.abs(a[1])]
-}
-
+export const maxElement = (a: V2): number => Math.max(...a)
+export const abs = (a: V2): V2 => [Math.abs(a[0]), Math.abs(a[1])]
 export const subtract = (base: V2, subtraction: V2): V2 => combine(base, subtraction, (a, b) => a - b)
-
 export const multiply = (base: V2, multiplier: V2): V2 => combine(base, multiplier, (a, b) => a * b)
-
 export const dot = (a: V2, b: V2): number => a[0] * b[0] + a[1] * b[1]
-
 export const lerp = (from: V2, to: V2, amount: number): V2 =>
   combine(from, to, (fromElement, toElement) => MathUtils.lerp(fromElement, toElement, amount))
 
@@ -55,13 +41,9 @@ export const clamp = (value: V2, min: V2, max: V2): V2 => [
   MathUtils.clamp(value[0], min[0], max[0]),
   MathUtils.clamp(value[1], min[1], max[1]),
 ]
-
 export const tangent = (vector: V2): V2 => [-vector[1], vector[0]]
-
 export const scale = (base: V2, factor: number): V2 => fromArray(base.map((element) => element * factor))
-
 export const divideScalar = (base: V2, divisor: number): V2 => fromArray(base.map((element) => element / divisor))
-
 export const divide = (base: V2, divisor: V2): V2 => combine(base, divisor, (a, b) => a / b)
 
 export const normalise = (vector: V2): V2 => {
@@ -107,9 +89,7 @@ export const fromArray = (array: number[]): V2 => {
   return array as unknown as V2
 }
 
-export const valueEquality = (a: V2, b: V2): boolean => {
-  return a[0] === b[0] && a[1] === b[1]
-}
+export const valueEquality = (a: V2, b: V2): boolean => a[0] === b[0] && a[1] === b[1]
 
 export const fromVector2 = ({ x, y }: { x: number; y: number }): V2 => [x, y]
 
@@ -122,6 +102,4 @@ export const average = (...vectors: [V2, ...V2[]]): V2 => {
   return divideScalar(sum, vectors.length)
 }
 
-export const fromPolar = (radius: number, angle: number) => {
-  return rotate([radius, 0], angle)
-}
+export const fromPolar = (radius: number, angle: number) => rotate([radius, 0], angle)
