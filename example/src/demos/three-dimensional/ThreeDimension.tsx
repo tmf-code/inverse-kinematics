@@ -10,7 +10,7 @@ import { Target } from './components/Target'
 const shoulder: V3 = [0, 0, 0]
 
 const shoulderToElbow: Solve3D.Link = {
-  length: 100,
+  length: 80,
   rotation: QuaternionO.zeroRotation(),
   constraints: { roll: 0, yaw: Math.PI, pitch: Math.PI * 1.1 },
 }
@@ -18,7 +18,7 @@ const shoulderToElbow: Solve3D.Link = {
 const elbowToWrist: Solve3D.Link = {
   length: 100,
   rotation: QuaternionO.zeroRotation(),
-  constraints: { roll: Math.PI / 2, yaw: (5 * Math.PI) / 6, pitch: 0 },
+  constraints: { roll: Math.PI / 2, yaw: { min: -(5 * Math.PI) / 6, max: 0 }, pitch: 0 },
 }
 
 const wristToIndexTip: Solve3D.Link = {
@@ -39,7 +39,7 @@ function ThreeDimension() {
         const position = [
           event.clientX - window.innerWidth / 2,
           -event.clientY + window.innerHeight / 2,
-          Math.random() * 500,
+          Math.random() * 100,
         ] as V3
         setTarget(position)
       }}

@@ -13,7 +13,7 @@ export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[];
     if (!ref.current) return
     ref.current.position.set(...position)
     Solve3D.solve(sequence, position, target, {
-      acceptedError: 30,
+      acceptedError: 10,
       learningRate,
     })
   })
@@ -44,10 +44,10 @@ function makeChain(links: Solve3D.Link[]): LinkProps | undefined {
   return chain
 }
 
-const knownRangeOfMovement = 5 * 200
+const knownRangeOfMovement = 230
 function learningRate(errorDistance: number): number {
   const relativeDistanceToTarget = clamp(errorDistance / knownRangeOfMovement, 0, 1)
-  const cutoff = 0.10
+  const cutoff = 0.1
 
   if (relativeDistanceToTarget > cutoff) {
     return 10e-5

@@ -15,10 +15,15 @@ export interface Link {
   readonly length: number
 }
 
+interface Range {
+  min: number
+  max: number
+}
+
 export interface Constraints {
-  pitch?: number
-  yaw?: number
-  roll?: number
+  pitch?: number | Range
+  yaw?: number | Range
+  roll?: number | Range
 }
 
 export interface SolveOptions {
@@ -108,11 +113,42 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
     .forEach(({ link, angleStep }) => {
       link.rotation = QuaternionO.multiply(link.rotation, angleStep)
       if (link.constraints === undefined) return
-      const bounds: V3 = V3O.scale(
-        [link.constraints.pitch ?? Infinity, link.constraints.yaw ?? Infinity, link.constraints.roll ?? Infinity],
-        1 / 2,
-      )
-      link.rotation = QuaternionO.clamp(link.rotation, bounds)
+
+      const { pitch, yaw, roll } = link.constraints
+
+      let pitchMin: number
+      let pitchMax: number
+      if (typeof pitch === 'number') {
+        pitchMin = -pitch / 2
+        pitchMax = pitch / 2
+      } else {
+        pitchMin = pitch?.min ?? Infinity
+        pitchMax = pitch?.max ?? Infinity
+      }
+
+      let yawMin: number
+      let yawMax: number
+      if (typeof yaw === 'number') {
+        yawMin = -yaw / 2
+        yawMax = yaw / 2
+      } else {
+        yawMin = yaw?.min ?? Infinity
+        yawMax = yaw?.max ?? Infinity
+      }
+
+      let rollMin: number
+      let rollMax: number
+      if (typeof roll === 'number') {
+        rollMin = -roll / 2
+        rollMax = roll / 2
+      } else {
+        rollMin = roll?.min ?? Infinity
+        rollMax = roll?.max ?? Infinity
+      }
+
+      const lowerBound: V3 = [pitchMin, yawMin, rollMin]
+      const upperBound: V3 = [pitchMax, yawMax, rollMax]
+      link.rotation = QuaternionO.clamp(link.rotation, lowerBound, upperBound)
     })
 }
 

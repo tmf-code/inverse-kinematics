@@ -53,13 +53,13 @@ export const normalize = (quaternion: Quaternion): Quaternion => {
   return [quaternion[0] / length, quaternion[1] / length, quaternion[2] / length, quaternion[3] / length]
 }
 
-export const clamp = (quaternion: Quaternion, bounds: V3): Quaternion => {
+export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Quaternion => {
   const [w, ...rotationAxis] = quaternion
 
   const [x, y, z] = V3O.fromArray(
     rotationAxis.map((component, index) => {
       const angle = 2 * Math.atan(component / w)
-      const clampedAngle = MathUtils.clamp(angle, -bounds[index]!, bounds[index]!)
+      const clampedAngle = MathUtils.clamp(angle, lowerBound[index]!, upperBound[index]!)
       return Math.tan(0.5 * clampedAngle)
     }),
   )
