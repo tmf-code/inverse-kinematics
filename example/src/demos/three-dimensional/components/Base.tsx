@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { Solve3D, V3 } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
+import { clamp } from 'three/src/math/MathUtils'
 import { Link, LinkProps } from './Link'
 
 export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[]; position: V3; target: V3 }) => {
@@ -11,7 +12,10 @@ export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[];
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position)
-    Solve3D.solve(sequence, position, target, { acceptedError: 20 })
+    Solve3D.solve(sequence, position, target, {
+      acceptedError: 30,
+      learningRate,
+    })
   })
 
   return (
@@ -38,4 +42,20 @@ function makeChain(links: Solve3D.Link[]): LinkProps | undefined {
   }
 
   return chain
+}
+
+const knownRangeOfMovement = 5 * 200
+function learningRate(errorDistance: number): number {
+  const relativeDistanceToTarget = clamp(errorDistance / knownRangeOfMovement, 0, 1)
+  const cutoff = 0.10
+
+  if (relativeDistanceToTarget > cutoff) {
+    return 10e-5
+  }
+
+  // result is between 0 and 1
+  const remainingDistance = relativeDistanceToTarget / 0.02
+  const minimumLearningRate = 10e-6
+
+  return minimumLearningRate + remainingDistance * 10e-6
 }
