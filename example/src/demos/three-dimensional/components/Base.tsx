@@ -4,17 +4,27 @@ import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
 
-export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[]; position: V3; target: V3 }) => {
+export const Base = ({ position, links, target }: { links: readonly Solve3D.Link[]; position: V3; target: V3 }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
-  const chain = useMemo(() => makeChain(sequence), [sequence])
+  const adjustedLinksRef = useRef(links)
+  const chain = useMemo(() => makeChain(links), [links])
 
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position)
-    Solve3D.solve(sequence, position, target, {
+    adjustedLinksRef.current = Solve3D.solve(adjustedLinksRef.current, position, target, {
       acceptedError: 10,
       learningRate,
-    })
+    }).links
+
+    let depth = 0
+    let child = chain
+
+    while (child !== undefined && adjustedLinksRef.current[depth] !== undefined) {
+      child.link.rotation = adjustedLinksRef.current[depth]!.rotation
+      depth++
+      child = child.child
+    }
   })
 
   return (
@@ -26,7 +36,7 @@ export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[];
   )
 }
 
-function makeChain(links: Solve3D.Link[]): LinkProps | undefined {
+function makeChain(links: readonly Solve3D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
     const link: LinkProps = { link: links[index]! }

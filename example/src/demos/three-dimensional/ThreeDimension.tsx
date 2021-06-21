@@ -55,7 +55,7 @@ function ThreeDimension() {
       >
         <OrbitControls />
         <group scale={[0.005, 0.005, 0.005]}>
-          <Base position={base} sequence={links} target={target} />
+          <Base position={base} links={links} target={target} />
           <DebugForwardPass links={links} basePosition={base} />
           <Target position={target} />
         </group>

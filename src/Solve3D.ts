@@ -6,7 +6,7 @@ export interface Link {
   /**
    * The rotation at the base of the link
    */
-  rotation: Quaternion
+  readonly rotation: Quaternion
   /**
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
@@ -16,14 +16,14 @@ export interface Link {
 }
 
 interface Range {
-  min: number
-  max: number
+  readonly min: number
+  readonly max: number
 }
 
 export interface Constraints {
-  pitch?: number | Range
-  yaw?: number | Range
-  roll?: number | Range
+  readonly pitch?: number | Range
+  readonly yaw?: number | Range
+  readonly roll?: number | Range
 }
 
 export interface SolveOptions {
@@ -32,7 +32,7 @@ export interface SolveOptions {
    * Usually the default here will do.
    * @default 0.00001
    */
-  deltaAngle?: number
+  readonly deltaAngle?: number
   /**
    * Sets the 'speed' at which the algorithm converges on the target.
    * Larger values will cause oscillations, or vibrations about the target
@@ -41,19 +41,39 @@ export interface SolveOptions {
    * Can either be a constant, or a function that returns a learning rate
    * @default 0.0001
    */
-  learningRate?: number | ((errorDistance: number) => number)
+  readonly learningRate?: number | ((errorDistance: number) => number)
   /**
    * Useful if there is oscillations or vibration around the target
    * @default 0
    */
-  acceptedError?: number
+  readonly acceptedError?: number
+}
+
+export interface SolveResult {
+  /**
+   * Copy of the structure of input links
+   * With the possibility of their rotation being changed
+   */
+  readonly links: Link[]
+  /**
+   * Returns the error distance after the solve step
+   */
+  readonly getErrorDistance: () => number
+  /**
+   * true if the solve terminates early due to the end effector being close to the target.
+   * undefined if solve has adjusted the rotations in links
+   *
+   * undefined is used here as we don't rerun error checking after the angle adjustment, thus it cannot be known true or false.
+   * This is done to improve performance
+   */
+  readonly isWithinAcceptedError: true | undefined
 }
 
 /**
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each link.angle
  */
-export function solve(links: Link[], basePosition: V3, target: V3, options?: SolveOptions) {
+export function solve(links: readonly Link[], basePosition: V3, target: V3, options?: SolveOptions): SolveResult {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -68,7 +88,7 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
 
   const error = V3O.euclideanDistance(target, effectorPosition)
 
-  if (error < acceptedError) return
+  if (error < acceptedError) return { links: [...links], isWithinAcceptedError: true, getErrorDistance: () => error }
 
   if (joints.length !== links.length + 1) {
     throw new Error(
@@ -80,7 +100,7 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  links
+  const result: Link[] = links
     .map((link, linkIndex) => {
       // For each, calculate partial derivative, sum to give full numerical derivative
       const angleStep: V3 = V3O.fromArray(
@@ -110,11 +130,11 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
 
       return { link, angleStep: QuaternionO.fromEulerAngles(angleStep) }
     })
-    .forEach(({ link, angleStep }) => {
-      link.rotation = QuaternionO.multiply(link.rotation, angleStep)
-      if (link.constraints === undefined) return
+    .map(({ link: { length, rotation, constraints }, angleStep }) => {
+      const steppedRotation = QuaternionO.multiply(rotation, angleStep)
+      if (constraints === undefined) return { length, rotation: steppedRotation }
 
-      const { pitch, yaw, roll } = link.constraints
+      const { pitch, yaw, roll } = constraints
 
       let pitchMin: number
       let pitchMax: number
@@ -148,13 +168,28 @@ export function solve(links: Link[], basePosition: V3, target: V3, options?: Sol
 
       const lowerBound: V3 = [pitchMin, yawMin, rollMin]
       const upperBound: V3 = [pitchMax, yawMax, rollMax]
-      link.rotation = QuaternionO.clamp(link.rotation, lowerBound, upperBound)
+      const clampedRotation = QuaternionO.clamp(steppedRotation, lowerBound, upperBound)
+      return { length, rotation: clampedRotation, constraints }
     })
+
+  return {
+    links: result,
+    getErrorDistance: () =>
+      getErrorDistance(
+        result,
+        {
+          position: basePosition,
+          rotation: QuaternionO.zeroRotation(),
+        },
+        target,
+      ),
+    isWithinAcceptedError: undefined,
+  }
 }
 
 export interface JointTransform {
-  position: V3
-  rotation: Quaternion
+  readonly position: V3
+  readonly rotation: Quaternion
 }
 
 /**
@@ -176,11 +211,11 @@ export function getEndEffectorPosition(links: Link[], joint: JointTransform): V3
  * Returns the absolute position and rotation of each link
  */
 export function getJointTransforms(
-  links: Link[],
+  links: readonly Link[],
   joint: JointTransform,
 ): {
-  transforms: JointTransform[]
-  effectorPosition: V3
+  readonly transforms: JointTransform[]
+  readonly effectorPosition: V3
 } {
   const transforms = [joint]
 

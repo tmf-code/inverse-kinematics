@@ -1,5 +1,13 @@
-import { QuaternionO, V3 } from '../src'
-import { Link, getJointTransforms, getErrorDistance, solve, SolveOptions, JointTransform } from '../src/Solve3D'
+import { QuaternionO, Solve3D, V3 } from '../src'
+import {
+  Link,
+  getJointTransforms,
+  getErrorDistance,
+  solve,
+  SolveOptions,
+  JointTransform,
+  SolveResult,
+} from '../src/Solve3D'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {
@@ -115,9 +123,7 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
+    solveAndCheckDidImprove(links, base, target, 3)
   })
 
   it('Reduces distance to target each time it is called with complex chain', () => {
@@ -131,9 +137,32 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
+    solveAndCheckDidImprove(links, base, target, 3)
+  })
+
+  it('Should not improve if output of previous step is not used as input to following step', () => {
+    const links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), length: 50 },
+    ]
+    const target: V3 = [0, 50, 0]
+
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    const options: SolveOptions = {
+      acceptedError: 0,
+    }
+
+    let solveResult: undefined | SolveResult
+
+    for (let index = 0; index < 3; index++) {
+      const errorBefore = getErrorDistance(links, base, target)
+      solve(links, base.position, target, options)
+      const errorAfter = Solve3D.getErrorDistance(links, base, target)
+      expect(errorBefore).toEqual(errorAfter)
+    }
   })
 })
 
@@ -141,18 +170,18 @@ function cloneDeep<T>(object: T): T {
   return JSON.parse(JSON.stringify(object))
 }
 
-function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V3) {
+function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V3, times: number) {
   const options: SolveOptions = {
     acceptedError: 0,
   }
 
-  const errorBefore = getErrorDistance(links, base, target)
+  let solveResult: undefined | SolveResult
 
-  solve(links, base.position, target, options)
-
-  const errorAfter = getErrorDistance(links, base, target)
-
-  expect(errorBefore).toBeGreaterThan(errorAfter)
-
-  return { errorBefore, errorAfter }
+  for (let index = 0; index < times; index++) {
+    const linksThisIteration = solveResult?.links ?? links
+    const errorBefore = getErrorDistance(linksThisIteration, base, target)
+    solveResult = solve(linksThisIteration, base.position, target, options)
+    const errorAfter = solveResult.getErrorDistance()
+    expect(errorBefore).toBeGreaterThan(errorAfter)
+  }
 }

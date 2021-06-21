@@ -109,11 +109,11 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
       return { link, angleStep }
     })
     .map(({ link: { length, rotation, constraint }, angleStep }) => {
-      const resultRotation = rotation + angleStep
-      if (constraint === undefined) return { length: length, rotation: resultRotation }
+      const steppedRotation = rotation + angleStep
+      if (constraint === undefined) return { length, rotation: steppedRotation }
 
       const halfContraint = constraint / 2
-      const clampedRotation = clamp(resultRotation, -halfContraint, halfContraint)
+      const clampedRotation = clamp(steppedRotation, -halfContraint, halfContraint)
       return { length, rotation: clampedRotation, constraint }
     })
 
