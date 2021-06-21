@@ -1,27 +1,22 @@
 import { useFrame } from '@react-three/fiber'
-import { MathUtils, Solve2D, V2 } from 'ik'
+import { Solve2D, V2 } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
 
-export const Base = ({ position, links, target }: { links: Solve2D.Link[]; position: V2; target: V2 }) => {
+export const Base = ({ position, links }: { links: { current: readonly Solve2D.Link[] }; position: V2 }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
-  const adjustedLinksRef = useRef(links)
-  const chain = useMemo(() => makeChain(links), [links])
+  const chain = useMemo(() => makeChain(links.current), [links.current.length])
 
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position, 0)
-    adjustedLinksRef.current = Solve2D.solve(adjustedLinksRef.current, position, target, {
-      learningRate,
-      acceptedError: 10,
-    }).links
 
     let depth = 0
     let child = chain
 
-    while (child !== undefined && adjustedLinksRef.current[depth] !== undefined) {
-      child.link.rotation = adjustedLinksRef.current[depth]!.rotation ?? 0
+    while (child !== undefined && links.current[depth] !== undefined) {
+      child.link.rotation = links.current[depth]!.rotation ?? 0
       depth++
       child = child.child
     }
@@ -36,7 +31,7 @@ export const Base = ({ position, links, target }: { links: Solve2D.Link[]; posit
   )
 }
 
-function makeChain(links: Solve2D.Link[]): LinkProps | undefined {
+function makeChain(links: readonly Solve2D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
     const link: LinkProps = { link: { ...links[index]!, rotation: links[index]!.rotation ?? 0 } }
@@ -51,20 +46,4 @@ function makeChain(links: Solve2D.Link[]): LinkProps | undefined {
   }
 
   return chain
-}
-
-const knownRangeOfMovement = 230
-function learningRate(errorDistance: number): number {
-  const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
-  const cutoff = 0.1
-
-  if (relativeDistanceToTarget > cutoff) {
-    return 10e-5
-  }
-
-  // result is between 0 and 1
-  const remainingDistance = relativeDistanceToTarget / 0.02
-  const minimumLearningRate = 10e-6
-
-  return minimumLearningRate + remainingDistance * 10e-6
 }

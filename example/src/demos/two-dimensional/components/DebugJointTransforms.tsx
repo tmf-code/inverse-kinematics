@@ -1,14 +1,20 @@
 import { useFrame } from '@react-three/fiber'
 import { Solve2D, V2 } from 'ik'
-import React, { useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
-export const DebugJointTransforms = ({ links, basePosition }: { links: Solve2D.Link[]; basePosition: V2 }) => {
+export const DebugJointTransforms = ({
+  links,
+  position: basePosition,
+}: {
+  links: { current: readonly Solve2D.Link[] }
+  position: V2
+}) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve2D.getJointTransforms(links, {
+    const { transforms } = Solve2D.getJointTransforms(links.current, {
       position: basePosition,
       rotation: 0,
     })
@@ -22,16 +28,17 @@ export const DebugJointTransforms = ({ links, basePosition }: { links: Solve2D.L
     }
   })
 
-  return (
-    <group ref={ref}>
-      {Array.from({ length: links.length + 1 }).map((_, index) => {
+  const jointPositions = useMemo(
+    () =>
+      Array.from({ length: links.current.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
             <boxBufferGeometry args={[12.5, 12.5]} />
             <meshBasicMaterial color={'red'} />
           </mesh>
         )
-      })}
-    </group>
+      }),
+    [links.current.length],
   )
+  return <group ref={ref}>{jointPositions}</group>
 }
