@@ -5,19 +5,16 @@ import { Group } from 'three'
 
 export const JointTransforms = ({
   links,
-  basePosition,
+  base,
 }: {
   links: { current: readonly Solve3D.Link[] }
-  basePosition: V3
+  base: Solve3D.JointTransform
 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve3D.getJointTransforms(links.current, {
-      position: basePosition,
-      rotation: QuaternionO.zeroRotation(),
-    })
+    const { transforms } = Solve3D.getJointTransforms(links.current, base)
     for (let index = 0; index < ref.current.children.length; index++) {
       const child = ref.current.children[index]!
       const jointPosition = transforms[index]?.position

@@ -46,7 +46,12 @@ export interface SolveResult {
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each link.angle
  */
-export function solve(links: readonly Link[], basePosition: V3, target: V3, options?: SolveOptions): SolveResult {
+export function solve(
+  links: readonly Link[],
+  baseJoint: JointTransform,
+  target: V3,
+  options?: SolveOptions,
+): SolveResult {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -54,10 +59,7 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
   const acceptedError = options?.acceptedError ?? 0
 
   // Precalculate joint positions
-  const { transforms: joints, effectorPosition } = getJointTransforms(links, {
-    position: basePosition,
-    rotation: QuaternionO.zeroRotation(),
-  })
+  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
 
   const error = V3O.euclideanDistance(target, effectorPosition)
 
@@ -148,15 +150,7 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
 
   return {
     links: result,
-    getErrorDistance: () =>
-      getErrorDistance(
-        result,
-        {
-          position: basePosition,
-          rotation: QuaternionO.zeroRotation(),
-        },
-        target,
-      ),
+    getErrorDistance: () => getErrorDistance(result, baseJoint, target),
     isWithinAcceptedError: undefined,
   }
 }

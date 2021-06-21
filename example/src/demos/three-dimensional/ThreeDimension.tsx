@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { MathUtils, Solve3D, V3 } from 'ik'
+import { MathUtils, QuaternionO, Solve3D, V3 } from 'ik'
 import React, { useRef, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'
@@ -8,7 +8,7 @@ import { JointTransforms } from './components/JointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
 
-const shoulder: V3 = [0, 0, 0]
+const shoulder: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
 const shoulderToElbow: Solve3D.Link = {
   length: 80,
@@ -27,14 +27,12 @@ const wristToIndexTip: Solve3D.Link = {
 
 const initialLinks: Solve3D.Link[] = [shoulderToElbow, elbowToWrist, wristToIndexTip]
 
-const base: V3 = shoulder
-
 function ThreeDimension() {
   const [target, setTarget] = useState([500, 50, 0] as V3)
   const linksRef = useRef(initialLinks)
 
   useAnimationFrame(60, () => {
-    linksRef.current = Solve3D.solve(linksRef.current, base, target, {
+    linksRef.current = Solve3D.solve(linksRef.current, shoulder, target, {
       acceptedError: 10,
       learningRate,
     }).links
@@ -62,12 +60,12 @@ function ThreeDimension() {
       >
         <OrbitControls />
         <group scale={[0.005, 0.005, 0.005]}>
-          <Base position={base} links={linksRef} />
-          <JointTransforms links={linksRef} basePosition={base} />
+          <Base base={shoulder} links={linksRef} />
+          <JointTransforms links={linksRef} base={shoulder} />
           <Target position={target} />
         </group>
       </Canvas>
-      <Logger target={target} links={linksRef} basePosition={base} />
+      <Logger target={target} links={linksRef} base={shoulder} />
     </div>
   )
 }

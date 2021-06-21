@@ -4,13 +4,20 @@ import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
 
-export const Base = ({ position, links }: { links: { current: readonly Solve3D.Link[] }; position: V3 }) => {
+export const Base = ({
+  base: base,
+  links,
+}: {
+  links: { current: readonly Solve3D.Link[] }
+  base: Solve3D.JointTransform
+}) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
   const chain = useMemo(() => makeChain(links.current), [links.current.length])
 
   useFrame(() => {
     if (!ref.current) return
-    ref.current.position.set(...position)
+    ref.current.position.set(...base.position)
+    ref.current.quaternion.set(base.rotation[1], base.rotation[2], base.rotation[3], base.rotation[0])
 
     let depth = 0
     let child = chain
