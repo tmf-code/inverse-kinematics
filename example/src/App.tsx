@@ -22,6 +22,9 @@ function Menu() {
     <div style={{ position: 'absolute', zIndex: 10 }}>
       <ul>
         <li>
+          <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
+        </li>
+        <li>
           <Link to="/2d">2D Demo</Link>
         </li>
 
