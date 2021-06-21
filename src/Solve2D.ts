@@ -42,11 +42,11 @@ export interface SolveResult {
    * Copy of the structure of input links
    * With the possibility of their rotation being changed
    */
-  links: Link[]
+  readonly links: Link[]
   /**
    * Returns the error distance after the solve step
    */
-  getErrorDistance: () => number
+  readonly getErrorDistance: () => number
   /**
    * true if the solve terminates early due to the end effector being close to the target.
    * undefined if solve has adjusted the rotations in links
@@ -54,14 +54,14 @@ export interface SolveResult {
    * undefined is used here as we don't rerun error checking after the angle adjustment, thus it cannot be known true or false.
    * This is done to improve performance
    */
-  isWithinAcceptedError: true | undefined
+  readonly isWithinAcceptedError: true | undefined
 }
 
 /**
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each link.angle
  */
-export function solve(links: Link[], basePosition: V2, target: V2, options?: SolveOptions): SolveResult {
+export function solve(links: readonly Link[], basePosition: V2, target: V2, options?: SolveOptions): SolveResult {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -76,7 +76,7 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
 
   const error = V2O.euclideanDistance(target, effectorPosition)
 
-  if (error < acceptedError) return { links, isWithinAcceptedError: true, getErrorDistance: () => error }
+  if (error < acceptedError) return { links: [...links], isWithinAcceptedError: true, getErrorDistance: () => error }
 
   if (joints.length !== links.length + 1) {
     throw new Error(
@@ -133,14 +133,14 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
 }
 
 export interface JointTransform {
-  position: V2
-  rotation: number
+  readonly position: V2
+  readonly rotation: number
 }
 
 /**
  * Distance from end effector to the target
  */
-export function getErrorDistance(links: Link[], base: JointTransform, target: V2): number {
+export function getErrorDistance(links: readonly Link[], base: JointTransform, target: V2): number {
   const effectorPosition = getEndEffectorPosition(links, base)
   return V2O.euclideanDistance(target, effectorPosition)
 }
@@ -148,7 +148,7 @@ export function getErrorDistance(links: Link[], base: JointTransform, target: V2
 /**
  * Absolute position of the end effector (last links tip)
  */
-export function getEndEffectorPosition(links: Link[], joint: JointTransform): V2 {
+export function getEndEffectorPosition(links: readonly Link[], joint: JointTransform): V2 {
   return getJointTransforms(links, joint).effectorPosition
 }
 
@@ -156,11 +156,11 @@ export function getEndEffectorPosition(links: Link[], joint: JointTransform): V2
  * Returns the absolute position and rotation of each link
  */
 export function getJointTransforms(
-  links: Link[],
+  links: readonly Link[],
   joint: JointTransform,
 ): {
-  transforms: JointTransform[]
-  effectorPosition: V2
+  readonly transforms: JointTransform[]
+  readonly effectorPosition: V2
 } {
   const transforms = [joint]
 

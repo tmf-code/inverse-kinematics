@@ -195,7 +195,7 @@ export interface JointTransform {
 /**
  * Distance from end effector to the target
  */
-export function getErrorDistance(links: Link[], base: JointTransform, target: V3): number {
+export function getErrorDistance(links: readonly Link[], base: JointTransform, target: V3): number {
   const effectorPosition = getEndEffectorPosition(links, base)
   return V3O.euclideanDistance(target, effectorPosition)
 }
@@ -203,7 +203,7 @@ export function getErrorDistance(links: Link[], base: JointTransform, target: V3
 /**
  * Absolute position of the end effector (last links tip)
  */
-export function getEndEffectorPosition(links: Link[], joint: JointTransform): V3 {
+export function getEndEffectorPosition(links: readonly Link[], joint: JointTransform): V3 {
   return getJointTransforms(links, joint).effectorPosition
 }
 
