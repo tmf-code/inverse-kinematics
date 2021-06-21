@@ -1,7 +1,7 @@
 import { clamp } from './math/MathUtils'
 import { V2, V2O } from '.'
 import { SolveOptions } from './SolveOptions'
-
+import { Range } from './Range'
 export interface Link {
   /**
    * The rotation at the base of the link
@@ -11,7 +11,7 @@ export interface Link {
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
    */
-  readonly constraint?: number
+  readonly constraint?: number | Range
   readonly length: number
 }
 
@@ -91,8 +91,13 @@ export function solve(links: readonly Link[], basePosition: V2, target: V2, opti
       const steppedRotation = rotation + angleStep
       if (constraint === undefined) return { length, rotation: steppedRotation }
 
-      const halfContraint = constraint / 2
-      const clampedRotation = clamp(steppedRotation, -halfContraint, halfContraint)
+      if (typeof constraint === 'number') {
+        const halfContraint = constraint / 2
+        const clampedRotation = clamp(steppedRotation, -halfContraint, halfContraint)
+        return { length, rotation: clampedRotation, constraint }
+      }
+
+      const clampedRotation = clamp(steppedRotation, constraint.min, constraint.max)
       return { length, rotation: clampedRotation, constraint }
     })
 

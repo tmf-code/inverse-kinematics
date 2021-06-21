@@ -1,6 +1,7 @@
 import { QuaternionO, SolveOptions, V3O } from '.'
 import { Quaternion } from './math/Quaternion'
 import { V3 } from './math/V3'
+import { Range } from './Range'
 
 export interface Link {
   /**
@@ -13,11 +14,6 @@ export interface Link {
    */
   readonly constraints?: Constraints
   readonly length: number
-}
-
-interface Range {
-  readonly min: number
-  readonly max: number
 }
 
 export interface Constraints {
