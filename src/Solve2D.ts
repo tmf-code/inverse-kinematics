@@ -6,7 +6,7 @@ export interface Link {
   /**
    * The rotation at the base of the link
    */
-  readonly rotation: number
+  readonly rotation?: number
   /**
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
@@ -68,10 +68,10 @@ export function solve(links: readonly Link[], basePosition: V2, target: V2, opti
    * 2. Apply angle steps
    */
   const result: Link[] = links
-    .map((link, index) => {
+    .map(({ rotation = 0, length, constraint }, index) => {
       const linkWithAngleDelta = {
-        length: link.length,
-        rotation: link.rotation + deltaAngle,
+        length,
+        rotation: rotation + deltaAngle,
       }
 
       // Get remaining links from this links joint
@@ -85,7 +85,7 @@ export function solve(links: readonly Link[], basePosition: V2, target: V2, opti
       // Get resultant angle step which minimizes error
       const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
 
-      return { link, angleStep }
+      return { link: { rotation, length, constraint }, angleStep }
     })
     .map(({ link: { length, rotation, constraint }, angleStep }) => {
       const steppedRotation = rotation + angleStep
@@ -152,7 +152,7 @@ export function getJointTransforms(
     const currentLink = links[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = currentLink.rotation + parentTransform.rotation
+    const absoluteRotation = (currentLink.rotation ?? 0) + parentTransform.rotation
     const relativePosition = V2O.fromPolar(currentLink.length, absoluteRotation)
     const absolutePosition = V2O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })
