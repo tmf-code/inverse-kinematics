@@ -54,7 +54,8 @@ export function solve(links: readonly Link[], basePosition: V2, target: V2, opti
 
   const error = V2O.euclideanDistance(target, effectorPosition)
 
-  if (error < acceptedError) return { links: [...links], isWithinAcceptedError: true, getErrorDistance: () => error }
+  if (error < acceptedError)
+    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
 
   if (joints.length !== links.length + 1) {
     throw new Error(
@@ -155,4 +156,8 @@ export function getJointTransforms(
   const effectorPosition = transforms[transforms.length - 1]!.position
 
   return { transforms, effectorPosition }
+}
+
+function copyLink({ rotation, length, constraint: constraint }: Link): Link {
+  return { rotation, length, constraint: constraint === undefined ? undefined : constraint }
 }
