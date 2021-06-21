@@ -1,6 +1,6 @@
 # IK - Inverse Kinematics
 
-A typescript/javascript library for calculating inverse kinematics. Supports 2D and (soon) 3D applications.
+A typescript/javascript library for calculating inverse kinematics. Supports 2D and 3D applications.
 
 ## Install
 
@@ -111,7 +111,7 @@ Base
 
 Currently this package supports gradient descent. Soon it will also support a CCD approach.
 
-The algorithm is quite simple. You can find it in `src/Solve2D.ts`. Available parameters to tune with are:
+The algorithm is quite simple. You can find it in `src/Solve2D.ts`, or `src/Solve3D.ts`. Available parameters to tune with are:
 
 ```ts
 interface SolveOptions {
@@ -156,6 +156,6 @@ function learningRate(errorDistance: number): number {
   const remainingDistance = relativeDistanceToTarget / 0.02
   const minimumLearningRate = 10e-5
 
-  return minimumLearningRate + remainingDistance * errorDistance
+  return minimumLearningRate + remainingDistance * minimumLearningRate
 }
 ```
