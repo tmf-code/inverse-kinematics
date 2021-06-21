@@ -3,7 +3,7 @@ import { Solve2D, V2 } from 'ik'
 import React, { useRef } from 'react'
 import { Group } from 'three'
 
-export const DebugForwardPass = ({ links, basePosition }: { links: Solve2D.Link[]; basePosition: V2 }) => {
+export const DebugJointTransforms = ({ links, basePosition }: { links: Solve2D.Link[]; basePosition: V2 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {

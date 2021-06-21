@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { Solve2D, V2 } from 'ik'
 import React, { useState } from 'react'
 import { Base } from './components/Base'
-import { DebugForwardPass } from './components/DebugForwardPass'
+import { DebugJointTransforms } from './components/DebugJointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
 
@@ -36,7 +36,7 @@ function TwoDimension() {
         camera={{ near: -1000 }}
       >
         <Base position={base} links={links} target={target} />
-        <DebugForwardPass links={links} basePosition={base} />
+        <DebugJointTransforms links={links} basePosition={base} />
         <Target position={target} />
       </Canvas>
       <Logger target={target} links={links} basePosition={base} />
