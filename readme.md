@@ -31,7 +31,7 @@ const target: V2 = [50, 50]
 // Iterate until the error is within acceptable range
 const acceptedError = 10
 function loop() {
-  const result = Solve2D.solve(links, base.position, target)
+  const result = Solve2D.solve(links, base, target)
   const error = result.getErrorDistance()
   links = result.links
   if (error < acceptedError) return
@@ -64,7 +64,7 @@ const target: V3 = [50, 50, 50]
 // Iterate until the error is within acceptable range
 const acceptedError = 10
 function loop() {
-  const result = Solve3D.solve(links, base.position, target)
+  const result = Solve3D.solve(links, base, target)
   const error = result.getErrorDistance()
   links = result.links
   if (error < acceptedError) return
