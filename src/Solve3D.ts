@@ -65,7 +65,8 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
 
   const error = V3O.euclideanDistance(target, effectorPosition)
 
-  if (error < acceptedError) return { links: [...links], isWithinAcceptedError: true, getErrorDistance: () => error }
+  if (error < acceptedError)
+    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
 
   if (joints.length !== links.length + 1) {
     throw new Error(
@@ -146,7 +147,7 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
       const lowerBound: V3 = [pitchMin, yawMin, rollMin]
       const upperBound: V3 = [pitchMax, yawMax, rollMax]
       const clampedRotation = QuaternionO.clamp(steppedRotation, lowerBound, upperBound)
-      return { length, rotation: clampedRotation, constraints }
+      return { length, rotation: clampedRotation, constraints: copyConstraints(constraints) }
     })
 
   return {
@@ -194,7 +195,7 @@ export function getJointTransforms(
   readonly transforms: JointTransform[]
   readonly effectorPosition: V3
 } {
-  const transforms = [joint]
+  const transforms = [{ ...joint }]
 
   for (let index = 0; index < links.length; index++) {
     const currentLink = links[index]!
@@ -209,4 +210,34 @@ export function getJointTransforms(
   const effectorPosition = transforms[transforms.length - 1]!.position
 
   return { transforms, effectorPosition }
+}
+
+function copyLink({ rotation, length, constraints }: Link): Link {
+  return { rotation, length, constraints: constraints === undefined ? undefined : copyConstraints(constraints) }
+}
+
+type Writeable<T> = { -readonly [P in keyof T]: T[P] }
+
+function copyConstraints({ pitch, yaw, roll }: Constraints): Constraints {
+  const result: Writeable<Constraints> = {}
+
+  if (typeof pitch === 'number') {
+    result.pitch = pitch
+  } else if (typeof pitch !== undefined) {
+    result.pitch = { ...pitch! }
+  }
+
+  if (typeof yaw === 'number') {
+    result.yaw = yaw
+  } else if (typeof yaw !== undefined) {
+    result.yaw = { ...yaw! }
+  }
+
+  if (typeof roll === 'number') {
+    result.roll = roll
+  } else if (typeof roll !== undefined) {
+    result.roll = { ...roll! }
+  }
+
+  return result
 }

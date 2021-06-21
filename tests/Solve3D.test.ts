@@ -147,8 +147,6 @@ describe('solve', () => {
       acceptedError: 0,
     }
 
-    let solveResult: undefined | SolveResult
-
     for (let index = 0; index < 3; index++) {
       const errorBefore = getErrorDistance(links, base, target)
       solve(links, base.position, target, options)
