@@ -1,5 +1,13 @@
 import { V2 } from '../src'
-import { Link, getJointTransforms, getErrorDistance, solve, SolveOptions, JointTransform } from '../src/Solve2D'
+import {
+  Link,
+  getJointTransforms,
+  getErrorDistance,
+  solve,
+  SolveOptions,
+  JointTransform,
+  SolveResult,
+} from '../src/Solve2D'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {
@@ -115,9 +123,7 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
+    solveAndCheckDidImprove(links, base, target, 3)
   })
 
   it('Reduces distance to target each time it is called with complex chain', () => {
@@ -131,9 +137,7 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
-    solveAndCheckDidImprove(links, base, target)
+    solveAndCheckDidImprove(links, base, target, 3)
   })
 })
 
@@ -141,18 +145,18 @@ function cloneDeep<T>(object: T): T {
   return JSON.parse(JSON.stringify(object))
 }
 
-function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V2) {
+function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V2, times: number) {
   const options: SolveOptions = {
     acceptedError: 0,
   }
 
-  const errorBefore = getErrorDistance(links, base, target)
+  let solveResult: undefined | SolveResult
 
-  solve(links, base.position, target, options)
-
-  const errorAfter = getErrorDistance(links, base, target)
-
-  expect(errorBefore).toBeGreaterThan(errorAfter)
-
-  return { errorBefore, errorAfter }
+  for (let index = 0; index < times; index++) {
+    const linksThisIteration = solveResult?.links ?? links
+    const errorBefore = getErrorDistance(linksThisIteration, base, target)
+    solveResult = solve(linksThisIteration, base.position, target, options)
+    const errorAfter = solveResult.getErrorDistance()
+    expect(errorBefore).toBeGreaterThan(errorAfter)
+  }
 }

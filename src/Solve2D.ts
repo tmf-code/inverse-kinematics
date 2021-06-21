@@ -5,7 +5,7 @@ export interface Link {
   /**
    * The rotation at the base of the link
    */
-  rotation: number
+  readonly rotation: number
   /**
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
@@ -20,7 +20,7 @@ export interface SolveOptions {
    * Usually the default here will do.
    * @default 0.00001
    */
-  deltaAngle?: number
+  readonly deltaAngle?: number
   /**
    * Sets the 'speed' at which the algorithm converges on the target.
    * Larger values will cause oscillations, or vibrations about the target
@@ -29,19 +29,39 @@ export interface SolveOptions {
    * Can either be a constant, or a function that returns a learning rate
    * @default 0.0001
    */
-  learningRate?: number | ((errorDistance: number) => number)
+  readonly learningRate?: number | ((errorDistance: number) => number)
   /**
    * Useful if there is oscillations or vibration around the target
    * @default 0
    */
-  acceptedError?: number
+  readonly acceptedError?: number
+}
+
+export interface SolveResult {
+  /**
+   * Copy of the structure of input links
+   * With the possibility of their rotation being changed
+   */
+  links: Link[]
+  /**
+   * Returns the error distance after the solve step
+   */
+  getErrorDistance: () => number
+  /**
+   * true if the solve terminates early due to the end effector being close to the target.
+   * undefined if solve has adjusted the rotations in links
+   *
+   * undefined is used here as we don't rerun error checking after the angle adjustment, thus it cannot be known true or false.
+   * This is done to improve performance
+   */
+  isWithinAcceptedError: true | undefined
 }
 
 /**
  * Changes joint angle to minimize distance of end effector to target
  * Mutates each link.angle
  */
-export function solve(links: Link[], basePosition: V2, target: V2, options?: SolveOptions) {
+export function solve(links: Link[], basePosition: V2, target: V2, options?: SolveOptions): SolveResult {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -56,7 +76,7 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
 
   const error = V2O.euclideanDistance(target, effectorPosition)
 
-  if (error < acceptedError) return
+  if (error < acceptedError) return { links, isWithinAcceptedError: true, getErrorDistance: () => error }
 
   if (joints.length !== links.length + 1) {
     throw new Error(
@@ -68,7 +88,7 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  links
+  const result: Link[] = links
     .map((link, index) => {
       const linkWithAngleDelta = {
         length: link.length,
@@ -88,12 +108,28 @@ export function solve(links: Link[], basePosition: V2, target: V2, options?: Sol
 
       return { link, angleStep }
     })
-    .forEach(({ link, angleStep }) => {
-      link.rotation += angleStep
-      if (link.constraint === undefined) return
-      const halfContraint = link.constraint / 2
-      link.rotation = clamp(link.rotation, -halfContraint, halfContraint)
+    .map(({ link: { length, rotation, constraint }, angleStep }) => {
+      const resultRotation = rotation + angleStep
+      if (constraint === undefined) return { length: length, rotation: resultRotation }
+
+      const halfContraint = constraint / 2
+      const clampedRotation = clamp(resultRotation, -halfContraint, halfContraint)
+      return { length, rotation: clampedRotation, constraint }
     })
+
+  return {
+    links: result,
+    getErrorDistance: () =>
+      getErrorDistance(
+        result,
+        {
+          position: basePosition,
+          rotation: 0,
+        },
+        target,
+      ),
+    isWithinAcceptedError: undefined,
+  }
 }
 
 export interface JointTransform {

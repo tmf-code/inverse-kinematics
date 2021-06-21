@@ -35,7 +35,7 @@ function TwoDimension() {
         linear
         camera={{ near: -1000 }}
       >
-        <Base position={base} sequence={links} target={target} />
+        <Base position={base} links={links} target={target} />
         <DebugForwardPass links={links} basePosition={base} />
         <Target position={target} />
       </Canvas>
