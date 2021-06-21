@@ -20,11 +20,7 @@ import { V2, Solve2D } from 'inverse-kinematics'
 
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
-const bones: Solve2D.Link[] = [
-  { rotation: 0, length: 50 },
-  { rotation: 0, length: 50 },
-  { rotation: 0, length: 50 },
-]
+let links: Solve2D.Link[] = [{ length: 50 }, { length: 50 }, { length: 50 }]
 
 // Define the base of the links
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
@@ -35,10 +31,10 @@ const target: V2 = [50, 50]
 // Iterate until the error is within acceptable range
 const acceptedError = 10
 function loop() {
-  const error = Solve2D.getErrorDistance(bones, base, target)
+  const result = Solve2D.solve(links, base.position, target)
+  const error = result.getErrorDistance()
+  links = result.links
   if (error < acceptedError) return
-
-  Solve2D.solve(bones, base.position, target)
   setTimeout(loop, 100)
   console.log(error.toFixed(0))
 }
@@ -54,11 +50,7 @@ import { V3, Solve3D, QuaternionO } from 'inverse-kinematics'
 
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
-const bones: Solve3D.Link[] = [
-  { rotation: QuaternionO.zeroRotation(), length: 50 },
-  { rotation: QuaternionO.zeroRotation(), length: 50 },
-  { rotation: QuaternionO.zeroRotation(), length: 50 },
-]
+let links: Solve3D.Link[] = [{ length: 50 }, { length: 50 }, { length: 50 }]
 
 // Define the base of the links
 const base: Solve3D.JointTransform = {
@@ -72,10 +64,10 @@ const target: V3 = [50, 50, 50]
 // Iterate until the error is within acceptable range
 const acceptedError = 10
 function loop() {
-  const error = Solve3D.getErrorDistance(bones, base, target)
+  const result = Solve3D.solve(links, base.position, target)
+  const error = result.getErrorDistance()
+  links = result.links
   if (error < acceptedError) return
-
-  Solve3D.solve(bones, base.position, target)
   setTimeout(loop, 100)
   console.log(error.toFixed(0))
 }
