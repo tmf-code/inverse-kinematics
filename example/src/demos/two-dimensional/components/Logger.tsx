@@ -2,13 +2,21 @@ import { Solve2D, V2 } from 'ik'
 import React, { useRef } from 'react'
 import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
 
-export const Logger = ({ target, links, basePosition }: { target: V2; links: Solve2D.Link[]; basePosition: V2 }) => {
+export const Logger = ({
+  target,
+  links,
+  basePosition,
+}: {
+  target: V2
+  links: { current: Solve2D.Link[] }
+  basePosition: V2
+}) => {
   const distanceRef = useRef<HTMLTableCellElement>(null)
 
   useAnimationFrame(1, () => {
     if (!distanceRef.current) return
     distanceRef.current.innerText = Solve2D.getErrorDistance(
-      links,
+      links.current,
       {
         position: basePosition,
         rotation: 0,

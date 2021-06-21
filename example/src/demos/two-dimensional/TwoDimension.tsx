@@ -49,7 +49,7 @@ function TwoDimension() {
         <Base position={base} links={linksRef} />
         <Target position={target} />
       </Canvas>
-      <Logger target={target} links={initialLinks} basePosition={base} />
+      <Logger target={target} links={linksRef} basePosition={base} />
     </div>
   )
 }
