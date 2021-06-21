@@ -14,7 +14,7 @@ const initialLinks: Solve2D.Link[] = [
   { constraint: { min: 0, max: Math.PI / 2 }, length: 200 },
 ]
 
-const base: V2 = [0, 0]
+const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
 function TwoDimension() {
   const [target, setTarget] = useState([500, 50] as V2)
@@ -45,11 +45,11 @@ function TwoDimension() {
         linear
         camera={{ near: -1000 }}
       >
-        <JointTransforms links={linksRef} position={base} />
-        <Base position={base} links={linksRef} />
+        <JointTransforms links={linksRef} base={base} />
+        <Base base={base} links={linksRef} />
         <Target position={target} />
       </Canvas>
-      <Logger target={target} links={linksRef} basePosition={base} />
+      <Logger target={target} links={linksRef} base={base} />
     </div>
   )
 }

@@ -1,23 +1,20 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve2D, V2 } from 'ik'
+import { Solve2D } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
 export const JointTransforms = ({
   links,
-  position: basePosition,
+  base,
 }: {
   links: { current: readonly Solve2D.Link[] }
-  position: V2
+  base: Solve2D.JointTransform
 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve2D.getJointTransforms(links.current, {
-      position: basePosition,
-      rotation: 0,
-    })
+    const { transforms } = Solve2D.getJointTransforms(links.current, base)
     for (let index = 0; index < ref.current.children.length; index++) {
       const child = ref.current.children[index]!
       const jointPosition = transforms[index]?.position

@@ -18,6 +18,14 @@ describe('forwardPass', () => {
     expect(endEffectorPosition).toEqual([50, 0])
   })
 
+  it('Respects base rotation', () => {
+    const links: Link[] = [{ length: 50 }]
+    const pivotTransform = { position: [0, 0] as V2, rotation: Math.PI / 2 }
+    const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
+
+    expect(endEffectorPosition[1]).toBeCloseTo(50)
+  })
+
   it('Returns end effector position after long chain', () => {
     const links: Link[] = [
       { rotation: 0, length: 50 },
@@ -104,7 +112,7 @@ describe('solve', () => {
   it('Runs with empty links array', () => {
     const links: Link[] = []
     const linksCopy = cloneDeep(links)
-    solve(links, [0, 0], [0, 0])
+    solve(links, { position: [0, 0], rotation: 0 }, [0, 0])
 
     expect(links).toStrictEqual<Link[]>(linksCopy)
   })
@@ -147,7 +155,7 @@ function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V2
   for (let index = 0; index < times; index++) {
     const linksThisIteration = solveResult?.links ?? links
     const errorBefore = getErrorDistance(linksThisIteration, base, target)
-    solveResult = solve(linksThisIteration, base.position, target, options)
+    solveResult = solve(linksThisIteration, base, target, options)
     const errorAfter = solveResult.getErrorDistance()
     expect(errorBefore).toBeGreaterThan(errorAfter)
   }
