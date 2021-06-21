@@ -1,13 +1,5 @@
-import { QuaternionO, Solve3D, V3 } from '../src'
-import {
-  Link,
-  getJointTransforms,
-  getErrorDistance,
-  solve,
-  SolveOptions,
-  JointTransform,
-  SolveResult,
-} from '../src/Solve3D'
+import { QuaternionO, Solve3D, SolveOptions, V3 } from '../src'
+import { Link, getJointTransforms, getErrorDistance, solve, JointTransform, SolveResult } from '../src/Solve3D'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {

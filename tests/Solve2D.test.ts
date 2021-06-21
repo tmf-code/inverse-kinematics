@@ -1,13 +1,5 @@
-import { V2 } from '../src'
-import {
-  Link,
-  getJointTransforms,
-  getErrorDistance,
-  solve,
-  SolveOptions,
-  JointTransform,
-  SolveResult,
-} from '../src/Solve2D'
+import { SolveOptions, V2 } from '../src'
+import { Link, getJointTransforms, getErrorDistance, solve, JointTransform, SolveResult } from '../src/Solve2D'
 
 describe('forwardPass', () => {
   it('Returns base in empty chain', () => {
