@@ -42,6 +42,43 @@ function loop() {
 loop()
 ```
 
+## Quickstart 3D
+
+https://codesandbox.io/s/quickstart-3d-25xy6?file=/src/index.ts
+
+```ts
+import { V3, Solve3D, QuaternionO } from 'inverse-kinematics'
+
+// Create a list of 'links'
+// Three links, of 50 units long, all pointing in the same direction
+const bones: Solve3D.Link[] = [
+  { rotation: QuaternionO.zeroRotation(), length: 50 },
+  { rotation: QuaternionO.zeroRotation(), length: 50 },
+  { rotation: QuaternionO.zeroRotation(), length: 50 },
+]
+
+// Define the base of the links
+const base: Solve3D.JointTransform = {
+  position: [0, 0, 0],
+  rotation: QuaternionO.zeroRotation(),
+}
+
+// Define a target for the 'end effector' or the tip of the last link to move to
+const target: V3 = [50, 50, 50]
+
+// Iterate until the error is within acceptable range
+const acceptedError = 10
+function loop() {
+  const error = Solve3D.getErrorDistance(bones, base, target)
+  if (error < acceptedError) return
+
+  Solve3D.solve(bones, base.position, target)
+  setTimeout(loop, 100)
+  console.log(error.toFixed(0))
+}
+loop()
+```
+
 ## Examples
 
 Check out https://tmf-code.github.io/inverse-kinematics or find them in the folder /example
