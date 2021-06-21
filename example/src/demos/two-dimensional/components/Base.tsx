@@ -12,13 +12,16 @@ export const Base = ({ position, links, target }: { links: Solve2D.Link[]; posit
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...position, 0)
-    adjustedLinksRef.current = Solve2D.solve(links, position, target, { learningRate, acceptedError: 10 }).links
+    adjustedLinksRef.current = Solve2D.solve(adjustedLinksRef.current, position, target, {
+      learningRate,
+      acceptedError: 10,
+    }).links
 
     let depth = 0
     let child = chain
 
     while (child !== undefined && adjustedLinksRef.current[depth] !== undefined) {
-      child.link.rotation = adjustedLinksRef.current[depth]!.rotation
+      child.link.rotation = adjustedLinksRef.current[depth]!.rotation ?? 0
       depth++
       child = child.child
     }
@@ -36,7 +39,7 @@ export const Base = ({ position, links, target }: { links: Solve2D.Link[]; posit
 function makeChain(links: Solve2D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
-    const link: LinkProps = { link: links[index]! }
+    const link: LinkProps = { link: { ...links[index]!, rotation: links[index]!.rotation ?? 0 } }
 
     // Is first element
     if (chain === undefined) {
