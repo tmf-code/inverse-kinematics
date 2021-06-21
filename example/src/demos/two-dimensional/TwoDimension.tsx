@@ -3,7 +3,7 @@ import { MathUtils, Solve2D, V2 } from 'ik'
 import React, { useRef, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'
-import { DebugJointTransforms } from './components/DebugJointTransforms'
+import { JointTransforms } from './components/JointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
 
@@ -45,7 +45,7 @@ function TwoDimension() {
         linear
         camera={{ near: -1000 }}
       >
-        <DebugJointTransforms links={linksRef} position={base} />
+        <JointTransforms links={linksRef} position={base} />
         <Base position={base} links={linksRef} />
         <Target position={target} />
       </Canvas>

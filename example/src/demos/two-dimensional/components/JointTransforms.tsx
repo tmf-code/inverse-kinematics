@@ -3,7 +3,7 @@ import { Solve2D, V2 } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
-export const DebugJointTransforms = ({
+export const JointTransforms = ({
   links,
   position: basePosition,
 }: {
