@@ -1,14 +1,20 @@
 import { useFrame } from '@react-three/fiber'
 import { QuaternionO, Solve3D, V3 } from 'ik'
-import React, { useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
-export const JointTransforms = ({ links, basePosition }: { links: Solve3D.Link[]; basePosition: V3 }) => {
+export const JointTransforms = ({
+  links,
+  basePosition,
+}: {
+  links: { current: readonly Solve3D.Link[] }
+  basePosition: V3
+}) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve3D.getJointTransforms(links, {
+    const { transforms } = Solve3D.getJointTransforms(links.current, {
       position: basePosition,
       rotation: QuaternionO.zeroRotation(),
     })
@@ -22,16 +28,17 @@ export const JointTransforms = ({ links, basePosition }: { links: Solve3D.Link[]
     }
   })
 
-  return (
-    <group ref={ref}>
-      {Array.from({ length: links.length + 1 }).map((_, index) => {
+  const jointTransforms = useMemo(
+    () =>
+      Array.from({ length: links.current.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
             <boxBufferGeometry args={[12.5, 12.5, 12.5]} />
             <meshBasicMaterial color={'red'} />
           </mesh>
         )
-      })}
-    </group>
+      }),
+    [links.current.length],
   )
+  return <group ref={ref}>{jointTransforms}</group>
 }
