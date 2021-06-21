@@ -8,9 +8,9 @@ import { Target } from './components/Target'
 
 const links: Solve2D.Link[] = [
   { rotation: 0, length: 50 },
-  { rotation: 0, constraint: Math.PI, length: 200 },
-  { rotation: 0, constraint: Math.PI, length: 200 },
-  { rotation: 0, constraint: Math.PI, length: 200 },
+  { rotation: 0, constraint: { min: 0, max: Math.PI / 2 }, length: 200 },
+  { rotation: 0, constraint: { min: 0, max: Math.PI / 2 }, length: 200 },
+  { rotation: 0, constraint: { min: 0, max: Math.PI / 2 }, length: 200 },
 ]
 
 const base: V2 = [0, 0]
