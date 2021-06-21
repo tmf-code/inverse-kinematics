@@ -20,7 +20,7 @@
     "test:watch": "jest --watch",
     "build": "tsc",
     "typecheck": "tsc --noEmit && cd example && tsc --noEmit",
-    "prepublish": "npm run typecheck && npm run build && npm test",
+    "prepublish": "npm run typecheck && npm run build && npm test && npm run eslint",
     "eslint": "eslint --fix src/**/*.ts"
   },
   "repository": {
