@@ -1,5 +1,8 @@
 # IK - Inverse Kinematics
 
+[![Version](https://img.shields.io/npm/v/inverse-kinematics)](https://npmjs.com/package/inverse-kinematics)
+[![Downloads](https://img.shields.io/npm/dt/inverse-kinematics.svg)](https://npmjs.com/package/inverse-kinematics)
+
 A typescript/javascript library for calculating inverse kinematics. Supports 2D and 3D applications.
 
 ## Install
