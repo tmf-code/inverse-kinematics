@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve3D, V3, MathUtils } from 'ik'
+import { Solve3D, V3, MathUtils, QuaternionO } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
@@ -21,7 +21,7 @@ export const Base = ({ position, links, target }: { links: readonly Solve3D.Link
     let child = chain
 
     while (child !== undefined && adjustedLinksRef.current[depth] !== undefined) {
-      child.link.rotation = adjustedLinksRef.current[depth]!.rotation
+      child.link.rotation = adjustedLinksRef.current[depth]!.rotation ?? QuaternionO.zeroRotation()
       depth++
       child = child.child
     }
@@ -39,7 +39,9 @@ export const Base = ({ position, links, target }: { links: readonly Solve3D.Link
 function makeChain(links: readonly Solve3D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
-    const link: LinkProps = { link: links[index]! }
+    const link: LinkProps = {
+      link: { ...links[index]!, rotation: links[index]!.rotation ?? QuaternionO.zeroRotation() },
+    }
 
     // Is first element
     if (chain === undefined) {

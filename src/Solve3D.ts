@@ -7,7 +7,7 @@ export interface Link {
   /**
    * The rotation at the base of the link
    */
-  readonly rotation: Quaternion
+  readonly rotation?: Quaternion
   /**
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
@@ -75,15 +75,15 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
    * 2. Apply angle steps
    */
   const result: Link[] = links
-    .map((link, linkIndex) => {
+    .map(({ length, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
       // For each, calculate partial derivative, sum to give full numerical derivative
       const angleStep: V3 = V3O.fromArray(
         [0, 0, 0].map((_, v3Index) => {
           const eulerAngle = [0, 0, 0]
           eulerAngle[v3Index] = deltaAngle
           const linkWithAngleDelta = {
-            length: link.length,
-            rotation: QuaternionO.multiply(link.rotation, QuaternionO.fromEulerAngles(V3O.fromArray(eulerAngle))),
+            length: length,
+            rotation: QuaternionO.multiply(rotation, QuaternionO.fromEulerAngles(V3O.fromArray(eulerAngle))),
           }
 
           // Get remaining links from this links joint
@@ -102,7 +102,7 @@ export function solve(links: readonly Link[], basePosition: V3, target: V3, opti
         }),
       )
 
-      return { link, angleStep: QuaternionO.fromEulerAngles(angleStep) }
+      return { link: { length, rotation, constraints }, angleStep: QuaternionO.fromEulerAngles(angleStep) }
     })
     .map(({ link: { length, rotation, constraints }, angleStep }) => {
       const steppedRotation = QuaternionO.multiply(rotation, angleStep)
@@ -197,7 +197,10 @@ export function getJointTransforms(
     const currentLink = links[index]!
     const parentTransform = transforms[index]!
 
-    const absoluteRotation = QuaternionO.multiply(parentTransform.rotation, currentLink.rotation)
+    const absoluteRotation = QuaternionO.multiply(
+      parentTransform.rotation,
+      currentLink.rotation ?? QuaternionO.zeroRotation(),
+    )
     const relativePosition = V3O.fromPolar(currentLink.length, absoluteRotation)
     const absolutePosition = V3O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })

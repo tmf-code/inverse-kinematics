@@ -3,7 +3,7 @@ import { QuaternionO, Solve3D, V3 } from 'ik'
 import React, { useRef } from 'react'
 import { Group } from 'three'
 
-export const DebugForwardPass = ({ links, basePosition }: { links: Solve3D.Link[]; basePosition: V3 }) => {
+export const JointTransforms = ({ links, basePosition }: { links: Solve3D.Link[]; basePosition: V3 }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
