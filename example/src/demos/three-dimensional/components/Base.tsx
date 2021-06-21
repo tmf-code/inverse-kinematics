@@ -1,8 +1,7 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve3D, V3 } from 'ik'
+import { Solve3D, V3, MathUtils } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
-import { clamp } from 'three/src/math/MathUtils'
 import { Link, LinkProps } from './Link'
 
 export const Base = ({ position, sequence, target }: { sequence: Solve3D.Link[]; position: V3; target: V3 }) => {
@@ -46,7 +45,7 @@ function makeChain(links: Solve3D.Link[]): LinkProps | undefined {
 
 const knownRangeOfMovement = 230
 function learningRate(errorDistance: number): number {
-  const relativeDistanceToTarget = clamp(errorDistance / knownRangeOfMovement, 0, 1)
+  const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
   const cutoff = 0.1
 
   if (relativeDistanceToTarget > cutoff) {
