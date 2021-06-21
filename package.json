@@ -25,10 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tmf-code/ik.git"
+    "url": "git+https://github.com/tmf-code/inverse-kinematics.git"
   },
   "license": "MIT",
-  "homepage": "https://github.com/tmf-code/ik#readme",
+  "homepage": "https://github.com/tmf-code/inverse-kinematics#readme",
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.27.0",
