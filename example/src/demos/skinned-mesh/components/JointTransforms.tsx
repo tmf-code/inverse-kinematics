@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { QuaternionO, Solve3D, V3 } from 'ik'
+import { Solve3D } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
@@ -30,7 +30,7 @@ export const JointTransforms = ({
       Array.from({ length: links.current.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
-            <boxBufferGeometry args={[12.5, 12.5, 12.5]} />
+            <boxBufferGeometry args={[0.05, 0.05, 0.5]} />
             <meshBasicMaterial color={'red'} />
           </mesh>
         )
