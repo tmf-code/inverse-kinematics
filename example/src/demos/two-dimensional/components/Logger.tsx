@@ -8,14 +8,14 @@ export const Logger = ({
   base: base,
 }: {
   target: V2
-  links: { current: Solve2D.Link[] }
+  links: Solve2D.Link[]
   base: Solve2D.JointTransform
 }) => {
   const distanceRef = useRef<HTMLTableCellElement>(null)
 
   useAnimationFrame(1, () => {
     if (!distanceRef.current) return
-    distanceRef.current.innerText = Solve2D.getErrorDistance(links.current, base, target).toFixed(3)
+    distanceRef.current.innerText = Solve2D.getErrorDistance(links, base, target).toFixed(3)
   })
 
   return (

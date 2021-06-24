@@ -3,18 +3,13 @@ import { Solve2D } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 
-export const JointTransforms = ({
-  links,
-  base,
-}: {
-  links: { current: readonly Solve2D.Link[] }
-  base: Solve2D.JointTransform
-}) => {
+export const JointTransforms = ({ links, base }: { links: Solve2D.Link[]; base: Solve2D.JointTransform }) => {
   const ref = useRef<Group>()
 
   useFrame(() => {
     if (ref.current === undefined) return
-    const { transforms } = Solve2D.getJointTransforms(links.current, base)
+
+    const { transforms } = Solve2D.getJointTransforms(links, base)
     for (let index = 0; index < ref.current.children.length; index++) {
       const child = ref.current.children[index]!
       const jointPosition = transforms[index]?.position
@@ -27,7 +22,7 @@ export const JointTransforms = ({
 
   const jointPositions = useMemo(
     () =>
-      Array.from({ length: links.current.length + 1 }).map((_, index) => {
+      Array.from({ length: links.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
             <boxBufferGeometry args={[12.5, 12.5]} />
@@ -35,7 +30,7 @@ export const JointTransforms = ({
           </mesh>
         )
       }),
-    [links.current.length],
+    [links],
   )
   return <group ref={ref}>{jointPositions}</group>
 }

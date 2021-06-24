@@ -1,18 +1,12 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve3D, V3, MathUtils, QuaternionO } from 'ik'
+import { QuaternionO, Solve3D } from 'ik'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
 
-export const Base = ({
-  base: base,
-  links,
-}: {
-  links: { current: readonly Solve3D.Link[] }
-  base: Solve3D.JointTransform
-}) => {
+export const Base = ({ base: base, links }: { links: Solve3D.Link[]; base: Solve3D.JointTransform }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
-  const chain = useMemo(() => makeChain(links.current), [links.current.length])
+  const chain = useMemo(() => makeChain(links), [links])
 
   useFrame(() => {
     if (!ref.current) return
@@ -22,8 +16,8 @@ export const Base = ({
     let depth = 0
     let child = chain
 
-    while (child !== undefined && links.current[depth] !== undefined) {
-      child.link.rotation = links.current[depth]!.rotation ?? QuaternionO.zeroRotation()
+    while (child !== undefined && links[depth] !== undefined) {
+      child.link.rotation = links[depth]!.rotation ?? QuaternionO.zeroRotation()
       depth++
       child = child.child
     }
@@ -38,7 +32,7 @@ export const Base = ({
   )
 }
 
-function makeChain(links: readonly Solve3D.Link[]): LinkProps | undefined {
+function makeChain(links: Solve3D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
     const link: LinkProps = {

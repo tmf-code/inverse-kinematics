@@ -4,15 +4,9 @@ import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
 
-export const Base = ({
-  base: base,
-  links,
-}: {
-  links: { current: readonly Solve2D.Link[] }
-  base: Solve2D.JointTransform
-}) => {
+export const Base = ({ base: base, links }: { links: Solve2D.Link[]; base: Solve2D.JointTransform }) => {
   const ref = useRef<Mesh<BoxBufferGeometry, MeshNormalMaterial>>()
-  const chain = useMemo(() => makeChain(links.current), [links.current.length])
+  const chain = useMemo(() => makeChain(links), [links])
 
   useFrame(() => {
     if (!ref.current) return
@@ -22,8 +16,8 @@ export const Base = ({
     let depth = 0
     let child = chain
 
-    while (child !== undefined && links.current[depth] !== undefined) {
-      child.link.rotation = links.current[depth]!.rotation ?? 0
+    while (child !== undefined && links[depth] !== undefined) {
+      child.link.rotation = links[depth]!.rotation ?? 0
       depth++
       child = child.child
     }
@@ -38,7 +32,7 @@ export const Base = ({
   )
 }
 
-function makeChain(links: readonly Solve2D.Link[]): LinkProps | undefined {
+function makeChain(links: Solve2D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
     const link: LinkProps = { link: { ...links[index]!, rotation: links[index]!.rotation ?? 0 } }
