@@ -1,6 +1,7 @@
 import React from 'react'
 import { HashRouter, Link, Route, useLocation } from 'react-router-dom'
 import ThreeDimension from './demos/three-dimensional/ThreeDimension'
+import ThreeJS from './demos/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
 
 function App() {
@@ -15,6 +16,9 @@ function App() {
       </Route>
       <Route path="/3d">
         <ThreeDimension />
+      </Route>
+      <Route path="/three-js">
+        <ThreeJS />
       </Route>
     </HashRouter>
   )
@@ -32,6 +36,9 @@ function Menu() {
         </li>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D example</Link>
+        </li>
+        <li className={pathname === '/three-js' ? 'highlighted' : ''}>
+          <Link to="/three-js">Three.js example</Link>
         </li>
         <li>
           <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
