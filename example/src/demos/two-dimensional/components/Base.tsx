@@ -32,7 +32,7 @@ export const Base = ({ base: base, links }: { links: Solve2D.Link[]; base: Solve
   )
 }
 
-function makeChain(links: readonly Solve2D.Link[]): LinkProps | undefined {
+function makeChain(links: Solve2D.Link[]): LinkProps | undefined {
   let chain: LinkProps | undefined
   for (let index = links.length - 1; index >= 0; index--) {
     const link: LinkProps = { link: { ...links[index]!, rotation: links[index]!.rotation ?? 0 } }

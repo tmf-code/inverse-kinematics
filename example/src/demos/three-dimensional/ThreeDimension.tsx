@@ -1,41 +1,57 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3 } from 'ik'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'
 import { JointTransforms } from './components/JointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
+import { useControls } from 'leva'
 
-const shoulder: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
-
-const shoulderToElbow: Solve3D.Link = {
-  length: 80,
-  constraints: { roll: 0, yaw: Math.PI, pitch: Math.PI * 1.1 },
-}
-
-const elbowToWrist: Solve3D.Link = {
-  length: 100,
-  constraints: { roll: Math.PI / 2, yaw: { min: -(5 * Math.PI) / 6, max: 0 }, pitch: 0 },
-}
-
-const wristToIndexTip: Solve3D.Link = {
-  length: 30,
-  constraints: { roll: 0, yaw: 0, pitch: (3 * Math.PI) / 2 },
-}
-
-const initialLinks: Solve3D.Link[] = [shoulderToElbow, elbowToWrist, wristToIndexTip]
+const base: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
 function ThreeDimension() {
   const [target, setTarget] = useState([500, 50, 0] as V3)
-  const linksRef = useRef(initialLinks)
+  const [links, setLinks] = useState<Solve3D.Link[]>([])
+
+  const { linkCount, linkLength, linkMinAngle, linkMaxAngle } = useControls({
+    linkCount: { value: 4, min: 0, max: 50, step: 1 },
+    linkLength: { value: 200, min: 1, max: 200, step: 10 },
+    linkMinAngle: { value: -90, min: -360, max: 0, step: 10 },
+    linkMaxAngle: { value: 90, min: 0, max: 360, step: 10 },
+  })
+
+  useEffect(() => {
+    setLinks(makeLinks(linkCount, linkLength, linkMinAngle, linkMaxAngle))
+  }, [linkCount, linkLength, linkMinAngle, linkMaxAngle])
 
   useAnimationFrame(60, () => {
-    linksRef.current = Solve3D.solve(linksRef.current, shoulder, target, {
-      acceptedError: 10,
+    const knownRangeOfMovement = linkCount * linkLength
+
+    function learningRate(errorDistance: number): number {
+      const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
+      const cutoff = 0.1
+
+      if (relativeDistanceToTarget > cutoff) {
+        return 10e-6
+      }
+
+      // result is between 0 and 1
+      const remainingDistance = relativeDistanceToTarget / 0.02
+      const minimumLearningRate = 10e-7
+
+      return minimumLearningRate + remainingDistance * 10e-7
+    }
+
+    const result = Solve3D.solve(links, base, target, {
       learningRate,
+      acceptedError: 10,
     }).links
+
+    links.forEach((_, index) => {
+      links[index] = result[index]!
+    })
   })
 
   return (
@@ -60,30 +76,20 @@ function ThreeDimension() {
       >
         <OrbitControls />
         <group scale={[0.005, 0.005, 0.005]}>
-          <Base base={shoulder} links={linksRef} />
-          <JointTransforms links={linksRef} base={shoulder} />
+          <Base base={base} links={links} />
+          <JointTransforms links={links} base={base} />
           <Target position={target} />
         </group>
       </Canvas>
-      <Logger target={target} links={linksRef} base={shoulder} />
+      <Logger target={target} links={links} base={base} />
     </div>
   )
 }
 
-const knownRangeOfMovement = 230
-function learningRate(errorDistance: number): number {
-  const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
-  const cutoff = 0.1
-
-  if (relativeDistanceToTarget > cutoff) {
-    return 10e-5
-  }
-
-  // result is between 0 and 1
-  const remainingDistance = relativeDistanceToTarget / 0.02
-  const minimumLearningRate = 10e-6
-
-  return minimumLearningRate + remainingDistance * 10e-6
-}
-
 export default ThreeDimension
+
+const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve3D.Link[] =>
+  Array.from({ length: linkCount }).map(() => ({
+    length: linkLength,
+    constraint: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+  }))

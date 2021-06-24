@@ -1,4 +1,4 @@
-import { QuaternionO, Solve3D, V3 } from 'ik'
+import { Solve3D, V3 } from 'ik'
 import React, { useRef } from 'react'
 import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
 
@@ -8,14 +8,14 @@ export const Logger = ({
   base: base,
 }: {
   target: V3
-  links: { current: readonly Solve3D.Link[] }
+  links: Solve3D.Link[]
   base: Solve3D.JointTransform
 }) => {
   const distanceRef = useRef<HTMLTableCellElement>(null)
 
   useAnimationFrame(1, () => {
     if (!distanceRef.current) return
-    distanceRef.current.innerText = Solve3D.getErrorDistance(links.current, base, target).toFixed(3)
+    distanceRef.current.innerText = Solve3D.getErrorDistance(links, base, target).toFixed(3)
   })
 
   return (

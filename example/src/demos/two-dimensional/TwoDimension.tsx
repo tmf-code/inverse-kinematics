@@ -33,14 +33,14 @@ export default function TwoDimension() {
       const cutoff = 0.1
 
       if (relativeDistanceToTarget > cutoff) {
-        return 10e-5
+        return 10e-6
       }
 
       // result is between 0 and 1
       const remainingDistance = relativeDistanceToTarget / 0.02
-      const minimumLearningRate = 10e-6
+      const minimumLearningRate = 10e-7
 
-      return minimumLearningRate + remainingDistance * 10e-6
+      return minimumLearningRate + remainingDistance * 10e-7
     }
 
     const result = Solve2D.solve(links, base, target, {
@@ -82,5 +82,5 @@ export default function TwoDimension() {
 const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve2D.Link[] =>
   Array.from({ length: linkCount }).map(() => ({
     length: linkLength,
-    constraint: { min: linkMinAngle, max: linkMaxAngle },
+    constraint: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
   }))
