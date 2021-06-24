@@ -25,7 +25,7 @@ function Menu() {
   const pathname = location.pathname
   return (
     <div style={{ position: 'absolute', zIndex: 10 }}>
-      <h1>Inverse kinematics examples</h1>
+      <h2>Inverse kinematics examples</h2>
       <ul>
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
           <Link to="/2d">2D example</Link>
