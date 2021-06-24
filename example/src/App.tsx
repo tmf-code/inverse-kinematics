@@ -10,6 +10,9 @@ function App() {
       <Route path="/2d">
         <TwoDimension />
       </Route>
+      <Route exact path="/">
+        <TwoDimension />
+      </Route>
       <Route path="/3d">
         <ThreeDimension />
       </Route>
