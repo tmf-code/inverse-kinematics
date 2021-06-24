@@ -4,7 +4,7 @@ export interface SolveOptions {
    * Usually the default here will do.
    * @default 0.00001
    */
-  readonly deltaAngle?: number
+  deltaAngle?: number
   /**
    * Sets the 'speed' at which the algorithm converges on the target.
    * Larger values will cause oscillations, or vibrations about the target
@@ -13,10 +13,10 @@ export interface SolveOptions {
    * Can either be a constant, or a function that returns a learning rate
    * @default 0.0001
    */
-  readonly learningRate?: number | ((errorDistance: number) => number)
+  learningRate?: number | ((errorDistance: number) => number)
   /**
    * Useful if there is oscillations or vibration around the target
    * @default 0
    */
-  readonly acceptedError?: number
+  acceptedError?: number
 }

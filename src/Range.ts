@@ -1,4 +1,4 @@
 export interface Range {
-  readonly min: number
-  readonly max: number
+  min: number
+  max: number
 }
