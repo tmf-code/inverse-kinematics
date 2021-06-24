@@ -65,3 +65,10 @@ export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Q
   )
   return normalize([1, x, y, z])
 }
+
+export const fromObject = (object: { w: number; x: number; y: number; z: number }): Quaternion => [
+  object.w,
+  object.x,
+  object.y,
+  object.z,
+]
