@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 import { HashRouter, Link, Route, useLocation } from 'react-router-dom'
-import SkinnedMeshExample from './demos/skinned-mesh/SkinnedMesh'
+import SkinnedMeshExample from './demos/three-dimensional/skinned-mesh/SkinnedMesh'
 import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
