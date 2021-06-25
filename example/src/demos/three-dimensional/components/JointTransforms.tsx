@@ -25,7 +25,7 @@ export const JointTransforms = ({ links, base }: { links: Solve3D.Link[]; base: 
       Array.from({ length: links.length + 1 }).map((_, index) => {
         return (
           <mesh key={index}>
-            <boxBufferGeometry args={[12.5, 12.5, 12.5]} />
+            <boxBufferGeometry args={[0.1, 0.1, 0.1]} />
             <meshBasicMaterial color={'red'} />
           </mesh>
         )

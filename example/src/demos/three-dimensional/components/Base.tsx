@@ -25,7 +25,7 @@ export const Base = ({ base: base, links }: { links: Solve3D.Link[]; base: Solve
 
   return (
     <mesh ref={ref}>
-      <boxBufferGeometry args={[50, 50]} />
+      <boxBufferGeometry args={[0.3, 0.3, 0.01]} />
       <meshNormalMaterial />
       {chain && <Link {...chain} />}
     </mesh>

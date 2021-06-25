@@ -17,7 +17,7 @@ function ThreeDimension() {
 
   const { linkCount, linkLength, linkMinAngle, linkMaxAngle } = useControls({
     linkCount: { value: 4, min: 0, max: 50, step: 1 },
-    linkLength: { value: 200, min: 1, max: 200, step: 10 },
+    linkLength: { value: 1, min: 0.1, max: 2, step: 0.1 },
     linkMinAngle: { value: -90, min: -360, max: 0, step: 10 },
     linkMaxAngle: { value: 90, min: 0, max: 360, step: 10 },
   })
@@ -31,22 +31,22 @@ function ThreeDimension() {
 
     function learningRate(errorDistance: number): number {
       const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
-      const cutoff = 0.1
+      const cutoff = 0.5
 
       if (relativeDistanceToTarget > cutoff) {
-        return 10e-6
+        return 10e-3
       }
 
       // result is between 0 and 1
       const remainingDistance = relativeDistanceToTarget / 0.02
-      const minimumLearningRate = 10e-7
+      const minimumLearningRate = 10e-4
 
-      return minimumLearningRate + remainingDistance * 10e-7
+      return (minimumLearningRate + remainingDistance * 10e-4) / knownRangeOfMovement
     }
 
     const result = Solve3D.solve(links, base, target, {
       learningRate,
-      acceptedError: 10,
+      acceptedError: 0.1,
     }).links
 
     links.forEach((_, index) => {
@@ -55,16 +55,7 @@ function ThreeDimension() {
   })
 
   return (
-    <div
-      onClick={(event) => {
-        const position = [
-          event.clientX - window.innerWidth / 2,
-          -event.clientY + window.innerHeight / 2,
-          Math.random() * 100,
-        ] as V3
-        setTarget(position)
-      }}
-    >
+    <div>
       <Canvas
         style={{
           width: '100%',
@@ -75,10 +66,10 @@ function ThreeDimension() {
         linear
       >
         <OrbitControls />
-        <group scale={[0.005, 0.005, 0.005]}>
+        <group>
           <Base base={base} links={links} />
           <JointTransforms links={links} base={base} />
-          <Target position={target} />
+          <Target position={target} setPosition={setTarget} />
         </group>
       </Canvas>
       <Logger target={target} links={links} base={base} />
