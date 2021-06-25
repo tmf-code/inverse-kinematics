@@ -129,9 +129,9 @@ export const fromArray = (array: number[]): V3 => {
 export const fromVector3 = (vector: { x: number; y: number; z: number }): V3 => [vector.x, vector.y, vector.z]
 export const rotate = (vector: V3, rotation: Quaternion): V3 => {
   const conjugate = QuaternionO.conjugate(rotation)
-  const intermediate = QuaternionO.multiply(rotation, [0, ...vector])
-  const [, ...result] = QuaternionO.multiply(intermediate, conjugate)
-  return result
+  const intermediate = QuaternionO.multiply(rotation, [...vector, 0])
+  const result = QuaternionO.multiply(intermediate, conjugate)
+  return [result[0], result[1], result[2]]
 }
 
 export const fromPolar = (radius: number, angle: Quaternion): V3 => rotate([radius, 0, 0], angle)

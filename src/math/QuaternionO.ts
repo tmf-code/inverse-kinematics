@@ -4,20 +4,20 @@ import { V3 } from './V3'
 import * as MathUtils from './MathUtils'
 
 export const multiply = (a: Quaternion, b: Quaternion): Quaternion => {
-  const qax = a[1]
-  const qay = a[2]
-  const qaz = a[3]
-  const qaw = a[0]
-  const qbx = b[1]
-  const qby = b[2]
-  const qbz = b[3]
-  const qbw = b[0]
+  const qax = a[0]
+  const qay = a[1]
+  const qaz = a[2]
+  const qaw = a[3]
+  const qbx = b[0]
+  const qby = b[1]
+  const qbz = b[2]
+  const qbw = b[3]
 
   return [
-    qaw * qbw - qax * qbx - qay * qby - qaz * qbz,
     qax * qbw + qaw * qbx + qay * qbz - qaz * qby,
     qay * qbw + qaw * qby + qaz * qbx - qax * qbz,
     qaz * qbw + qaw * qbz + qax * qby - qay * qbx,
+    qaw * qbw - qax * qbx - qay * qby - qaz * qbz,
   ]
 }
 
@@ -34,18 +34,18 @@ export const fromEulerAngles = ([x, y, z]: V3): Quaternion => {
   const s3 = sin(z / 2)
 
   return [
-    c1 * c2 * c3 - s1 * s2 * s3,
     s1 * c2 * c3 + c1 * s2 * s3,
     c1 * s2 * c3 - s1 * c2 * s3,
     c1 * c2 * s3 + s1 * s2 * c3,
+    c1 * c2 * c3 - s1 * s2 * s3,
   ]
 }
 
 export const conjugate = (quaternion: Quaternion): Quaternion => {
-  return [quaternion[0], -quaternion[1], -quaternion[2], -quaternion[3]]
+  return [-quaternion[0], -quaternion[1], -quaternion[2], quaternion[3]]
 }
 
-export const zeroRotation = (): Quaternion => [1, 0, 0, 0]
+export const zeroRotation = (): Quaternion => [0, 0, 0, 1]
 
 export const normalize = (quaternion: Quaternion): Quaternion => {
   const length = Math.hypot(...quaternion)
@@ -54,7 +54,8 @@ export const normalize = (quaternion: Quaternion): Quaternion => {
 }
 
 export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Quaternion => {
-  const [w, ...rotationAxis] = quaternion
+  const rotationAxis = [quaternion[0], quaternion[1], quaternion[2]]
+  const w = quaternion[3]
 
   const [x, y, z] = V3O.fromArray(
     rotationAxis.map((component, index) => {
@@ -63,7 +64,7 @@ export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Q
       return Math.tan(0.5 * clampedAngle)
     }),
   )
-  return normalize([1, x, y, z])
+  return normalize([x, y, z, 1])
 }
 
 export const fromObject = (object: { w: number; x: number; y: number; z: number }): Quaternion => [
