@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { HashRouter, Link, Route, useLocation } from 'react-router-dom'
+import SkinnedMeshExample from './demos/skinned-mesh/SkinnedMesh'
 import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
@@ -20,6 +21,11 @@ function App() {
       <Route path="/three-js">
         <ThreeJS />
       </Route>
+      <Route path="/skinned-mesh">
+        <Suspense fallback={null}>
+          <SkinnedMeshExample />
+        </Suspense>
+      </Route>
     </HashRouter>
   )
 }
@@ -39,6 +45,9 @@ function Menu() {
         </li>
         <li className={pathname === '/three-js' ? 'highlighted' : ''}>
           <Link to="/three-js">Three.js example</Link>
+        </li>
+        <li>
+          <Link to="/skinned-mesh">Skinned Mesh Demo</Link>
         </li>
         <li>
           <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
