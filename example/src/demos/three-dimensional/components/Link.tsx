@@ -40,7 +40,7 @@ export const Link = ({ link, child }: LinkProps) => {
   return (
     <group ref={rotationRef}>
       <mesh ref={translationRef}>
-        <sphereBufferGeometry args={[20, 8, 8]} />
+        <sphereBufferGeometry args={[0.2, 8, 8]} />
         <meshStandardMaterial transparent wireframe />
         {child && <Link {...child} />}
       </mesh>
