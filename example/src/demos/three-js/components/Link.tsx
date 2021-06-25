@@ -25,7 +25,7 @@ export const Link = ({ link, child }: LinkProps) => {
   useFrame(() => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
-    rotationRef.current.quaternion.set(link.rotation[1], link.rotation[2], link.rotation[3], link.rotation[0])
+    rotationRef.current.quaternion.set(...link.rotation)
     translationRef.current.position.set(link.length, 0, 0)
   })
 

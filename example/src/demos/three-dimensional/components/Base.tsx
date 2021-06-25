@@ -11,7 +11,7 @@ export const Base = ({ base: base, links }: { links: Solve3D.Link[]; base: Solve
   useFrame(() => {
     if (!ref.current) return
     ref.current.position.set(...base.position)
-    ref.current.quaternion.set(base.rotation[1], base.rotation[2], base.rotation[3], base.rotation[0])
+    ref.current.quaternion.set(...base.rotation)
 
     let depth = 0
     let child = chain

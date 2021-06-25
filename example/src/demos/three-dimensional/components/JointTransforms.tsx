@@ -30,7 +30,7 @@ export const JointTransforms = ({ links, base }: { links: Solve3D.Link[]; base: 
           </mesh>
         )
       }),
-    [links.length],
+    [links],
   )
   return <group ref={ref}>{jointTransforms}</group>
 }
