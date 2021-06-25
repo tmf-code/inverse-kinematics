@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { MathUtils, QuaternionO, Solve3D, V3, V3O } from 'ik'
+import { MathUtils, QuaternionO, Solve3D, V3, V3O } from 'inverse-kinematics'
 import React, { useEffect, useRef, useState } from 'react'
 import { Object3D, Quaternion, Vector3 } from 'three'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'

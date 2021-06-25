@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve3D } from 'ik'
+import { Solve3D } from 'inverse-kinematics'
 import React, { useMemo, useRef } from 'react'
 import { Group } from 'three'
 

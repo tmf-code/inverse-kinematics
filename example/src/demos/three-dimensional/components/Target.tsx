@@ -1,4 +1,4 @@
-import { V3 } from 'ik'
+import { V3 } from 'inverse-kinematics'
 import React from 'react'
 
 export const Target = ({ position }: { position: V3 }) => {

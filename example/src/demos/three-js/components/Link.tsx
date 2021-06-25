@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Quaternion } from 'ik'
+import { Quaternion } from 'inverse-kinematics'
 import React, { useMemo, useRef } from 'react'
 import {
   BoxBufferGeometry,

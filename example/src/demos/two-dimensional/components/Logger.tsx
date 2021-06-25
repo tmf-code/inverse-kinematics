@@ -1,4 +1,4 @@
-import { Solve2D, V2 } from 'ik'
+import { Solve2D, V2 } from 'inverse-kinematics'
 import React, { useRef } from 'react'
 import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
 

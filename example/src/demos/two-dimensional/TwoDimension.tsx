@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { MathUtils, Solve2D, V2 } from 'ik'
+import { MathUtils, Solve2D, V2 } from 'inverse-kinematics'
 import React, { useEffect, useRef, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'

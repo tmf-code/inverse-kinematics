@@ -1,5 +1,5 @@
 import React from 'react'
-import { V2 } from 'ik'
+import { V2 } from 'inverse-kinematics'
 
 export const Target = ({ position }: { position: V2 }) => {
   return (
