@@ -47,11 +47,10 @@ function Menu() {
           <Link to="/three-js">Three.js example</Link>
         </li>
         <li>
-          <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
-        </li>
-
-        <li>
           <Link to="/skinned-mesh">Skinned Mesh Demo</Link>
+        </li>
+        <li>
+          <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
         </li>
       </ul>
     </div>
