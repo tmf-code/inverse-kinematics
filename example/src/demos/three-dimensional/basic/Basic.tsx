@@ -1,13 +1,13 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3 } from 'inverse-kinematics'
-import React, { useEffect, useRef, useState } from 'react'
-import { useAnimationFrame } from '../../hooks/useAnimationFrame'
-import { Base } from './components/Base'
-import { JointTransforms } from './components/JointTransforms'
-import { Logger } from './components/Logger'
-import { Target } from './components/Target'
 import { useControls } from 'leva'
+import React, { useEffect, useState } from 'react'
+import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
+import { Base } from '../components/Base'
+import { JointTransforms } from '../components/JointTransforms'
+import { Logger } from '../components/Logger'
+import { Target } from '../components/Target'
 
 const base: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 

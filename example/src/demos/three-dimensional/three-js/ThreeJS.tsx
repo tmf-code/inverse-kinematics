@@ -3,11 +3,11 @@ import { Canvas } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3, V3O } from 'inverse-kinematics'
 import React, { useEffect, useRef, useState } from 'react'
 import { Object3D, Quaternion, Vector3 } from 'three'
-import { useAnimationFrame } from '../../hooks/useAnimationFrame'
-import { Base } from './components/Base'
-import { JointTransforms } from './components/JointTransforms'
-import { Logger } from './components/Logger'
-import { Target } from './components/Target'
+import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
+import { Base } from '../components/Base'
+import { JointTransforms } from '../components/JointTransforms'
+import { Logger } from '../components/Logger'
+import { Target } from '../components/Target'
 
 function ThreeJS() {
   const [target, setTarget] = useState([500, 50, 0] as V3)
@@ -16,12 +16,13 @@ function ThreeJS() {
     position: [0, 0, 0],
     rotation: QuaternionO.zeroRotation(),
   })
-  const flattennedHierarchy = useRef<Object3D[]>([])
+  const flattennedHierarchy = useRef<Object3D[] | undefined>(undefined)
 
   const parent = useRef<Object3D>()
 
   useEffect(() => {
     if (parent.current === undefined) return
+    if (flattennedHierarchy.current !== undefined) return
 
     const hierarchy: Object3D[] = []
 
@@ -47,11 +48,11 @@ function ThreeJS() {
       rotation: QuaternionO.fromObject(parent.current.getWorldQuaternion(new Quaternion())),
     })
     flattennedHierarchy.current = hierarchy
-  }, [parent])
+  })
 
   useAnimationFrame(60, () => {
+    if (!flattennedHierarchy.current) return
     const knownRangeOfMovement = links.reduce((acc, cur) => acc + cur.length, 0)
-
     function learningRate(errorDistance: number): number {
       const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
       const cutoff = 0.1
@@ -77,26 +78,16 @@ function ThreeJS() {
       links[index] = result
       const q = result.rotation!
 
-      const object = flattennedHierarchy.current[index]!
+      const object = flattennedHierarchy.current![index]!
       const length = object?.position.length()
       const position = V3O.rotate([length, 0, 0], q)
       object.position.set(...position)
-      object.quaternion.set(q[1], q[2], q[3], q[0])
+      object.quaternion.set(...q)
     })
   })
 
   return (
-    <div
-      onClick={(event) => {
-        const newLocal = [
-          ((event.clientX - window.innerWidth / 2) / (window.innerWidth / 2)) * 100,
-          ((-event.clientY + window.innerHeight / 2) / (window.innerHeight / 2)) * 100,
-          0,
-        ] as V3
-        const position = newLocal
-        setTarget(position)
-      }}
-    >
+    <div>
       <Canvas
         style={{
           width: '100%',
@@ -109,17 +100,17 @@ function ThreeJS() {
         <OrbitControls />
         <Base base={base} links={links} />
         <JointTransforms links={links} base={base} />
-        <Target position={target} />
+        <Target position={target} setPosition={setTarget} />
 
         <group position={[0, 0, 0]} ref={parent}>
-          <mesh position={[5, 0, 0]}>
-            <sphereBufferGeometry />
+          <mesh position={[2, 0, 0]}>
+            <sphereBufferGeometry args={[0.3]} />
             <meshNormalMaterial wireframe />
-            <mesh position={[5, 0, 0]}>
-              <sphereBufferGeometry />
+            <mesh position={[2, 0, 0]}>
+              <sphereBufferGeometry args={[0.3]} />
               <meshNormalMaterial wireframe />
-              <mesh position={[5, 0, 0]}>
-                <sphereBufferGeometry />
+              <mesh position={[2, 0, 0]}>
+                <sphereBufferGeometry args={[0.3]} />
                 <meshNormalMaterial wireframe />
               </mesh>
             </mesh>

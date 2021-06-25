@@ -1,7 +1,7 @@
 import React from 'react'
 import { HashRouter, Link, Route, useLocation } from 'react-router-dom'
-import ThreeDimension from './demos/three-dimensional/ThreeDimension'
-import ThreeJS from './demos/three-js/ThreeJS'
+import Basic from './demos/three-dimensional/basic/Basic'
+import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
         <TwoDimension />
       </Route>
       <Route path="/3d">
-        <ThreeDimension />
+        <Basic />
       </Route>
       <Route path="/three-js">
         <ThreeJS />
