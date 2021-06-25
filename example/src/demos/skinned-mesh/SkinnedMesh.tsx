@@ -1,6 +1,6 @@
 import { OrbitControls, useGLTF } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { MathUtils, Quaternion, QuaternionO, Solve3D, V3, V3O } from 'ik'
+import { MathUtils, Quaternion, QuaternionO, Solve3D, V3, V3O } from 'inverse-kinematics'
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Bone, Group, MeshNormalMaterial, Quaternion as ThreeQuaternion, SkinnedMesh, Vector3 } from 'three'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'

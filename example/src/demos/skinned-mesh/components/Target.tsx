@@ -1,5 +1,5 @@
 import { useThree } from '@react-three/fiber'
-import { V3, V3O } from 'ik'
+import { V3, V3O } from 'inverse-kinematics'
 import React, { useEffect } from 'react'
 import { Vector3 } from 'three'
 

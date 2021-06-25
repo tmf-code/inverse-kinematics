@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Solve3D, V3, MathUtils, QuaternionO } from 'ik'
+import { Solve3D, V3, MathUtils, QuaternionO } from 'inverse-kinematics'
 import React, { useMemo, useRef } from 'react'
 import { BoxBufferGeometry, Mesh, MeshNormalMaterial } from 'three'
 import { Link, LinkProps } from './Link'
