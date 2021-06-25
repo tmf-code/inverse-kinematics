@@ -7,7 +7,7 @@ export const JointTransforms = ({
   links,
   base,
 }: {
-  links: { current: readonly Solve3D.Link[] }
+  links: { current: Solve3D.Link[] }
   base: Solve3D.JointTransform
 }) => {
   const ref = useRef<Group>()

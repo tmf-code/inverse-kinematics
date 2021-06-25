@@ -8,7 +8,7 @@ export const Logger = ({
   base: base,
 }: {
   target: V3
-  links: { current: readonly Solve3D.Link[] }
+  links: { current: Solve3D.Link[] }
   base: Solve3D.JointTransform
 }) => {
   const distanceRef = useRef<HTMLTableCellElement>(null)
