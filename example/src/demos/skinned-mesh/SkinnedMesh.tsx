@@ -45,7 +45,6 @@ function SkinnedMeshExample() {
     const baseBone = nodes.Bone as Bone
     const baseRotation: ThreeQuaternion = new ThreeQuaternion()
     baseBone.getWorldQuaternion(baseRotation)
-    // console.log(baseRotation)
 
     const base: Solve3D.JointTransform = {
       position: [0, 0, 0],
@@ -67,8 +66,6 @@ function SkinnedMeshExample() {
   const linksRef = useRef<Solve3D.Link[]>(getInitialLinks(linkBones))
   const [target, setTarget] = useState([500, 50, 0] as V3)
   const meshRef = useRef<SkinnedMesh>()
-  console.log(meshRef.current)
-  console.log(linkBones.length)
 
   useAnimationFrame(60, () => {
     const links = getInitialLinks(linkBones)
