@@ -6,7 +6,7 @@ import { Vector3 } from 'three'
 export const Target = ({ position, setPosition }: { position: V3; setPosition: (position: V3) => void }) => {
   const { camera } = useThree()
   useEffect(() => {
-    window.addEventListener('click', (event) => {
+    const onClick = (event: MouseEvent) => {
       const vec = new Vector3()
       const clickPosition = new Vector3()
       vec.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5)
@@ -15,8 +15,12 @@ export const Target = ({ position, setPosition }: { position: V3; setPosition: (
       const distance = -camera.position.z / vec.z
       clickPosition.copy(camera.position).add(vec.multiplyScalar(distance))
       setPosition(V3O.fromVector3(clickPosition))
-    })
-  })
+    }
+    window.addEventListener('click', onClick)
+    return () => {
+      window.removeEventListener('click', onClick)
+    }
+  }, [])
   return (
     <mesh scale={[0.1, 0.1, 0.1]} position={[...position]}>
       <boxBufferGeometry />
