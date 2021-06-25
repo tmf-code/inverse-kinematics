@@ -10,7 +10,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@react-three/drei": "^7.0.1",
+    "@react-three/drei": "^7.0.2",
     "@react-three/fiber": "7.0.1",
     "@types/react-router-dom": "^5.1.7",
     "gh-pages": "^3.2.3",
