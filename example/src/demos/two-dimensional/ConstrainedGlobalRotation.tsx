@@ -21,8 +21,8 @@ export default function ConstrainedGlobalRotation() {
   })
 
   useEffect(() => {
-    setLinks(makeLinks(linkCount, linkLength))
-  }, [linkCount, linkLength])
+    setLinks(makeLinks(linkCount, linkLength, endEffectorRotation))
+  }, [linkCount, linkLength, endEffectorRotation])
 
   useAnimationFrame(60, () => {
     const knownRangeOfMovement = linkCount * linkLength
@@ -47,13 +47,6 @@ export default function ConstrainedGlobalRotation() {
       acceptedError: 10,
     }).links
 
-    const jointTransforms = Solve2D.getJointTransforms(result, base)
-    const currentRotation = jointTransforms.effectorRotation
-    const targetRotation = (endEffectorRotation * Math.PI) / 180
-    const deltaRotation = targetRotation - currentRotation
-    if (result.length > 0) {
-      result[result.length - 1]!.rotation! += deltaRotation
-    }
     links.forEach((_, index) => {
       links[index] = result[index]!
     })
@@ -85,8 +78,14 @@ export default function ConstrainedGlobalRotation() {
   )
 }
 
-const makeLinks = (linkCount: number, linkLength: number): Solve2D.Link[] =>
-  Array.from({ length: linkCount }).map(() => {
+const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: number): Solve2D.Link[] =>
+  Array.from({ length: linkCount }).map((_, index) => {
+    if (index === linkCount - 1) {
+      return {
+        length: linkLength,
+        constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
+      }
+    }
     return {
       length: linkLength,
     }

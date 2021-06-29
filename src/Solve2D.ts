@@ -64,47 +64,56 @@ export function solve(links: Link[], base: JointTransform, target: V2, options?:
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  const result: Link[] = links
-    .map(({ rotation = 0, length, constraint }, index) => {
-      const linkWithAngleDelta = {
-        length,
-        rotation: rotation + deltaAngle,
-      }
+  const withAngleStep = links.map(({ rotation = 0, length, constraint }, index) => {
+    const linkWithAngleDelta = {
+      length,
+      rotation: rotation + deltaAngle,
+    }
 
-      // Get remaining links from this links joint
-      const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(index + 1)]
+    // Get remaining links from this links joint
+    const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(index + 1)]
 
-      // Get gradient from small change in joint angle
-      const joint = joints[index]!
-      const projectedError = getErrorDistance(projectedLinks, joint, target)
-      const gradient = (projectedError - error) / deltaAngle
+    // Get gradient from small change in joint angle
+    const joint = joints[index]!
+    const projectedError = getErrorDistance(projectedLinks, joint, target)
+    const gradient = (projectedError - error) / deltaAngle
 
-      // Get resultant angle step which minimizes error
-      const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
+    // Get resultant angle step which minimizes error
+    const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
 
-      return { link: { rotation, length, constraint }, angleStep }
-    })
-    .map(({ link: { length, rotation, constraint }, angleStep }) => {
-      const steppedRotation = rotation + angleStep
-      if (constraint === undefined) return { length, rotation: steppedRotation }
+    return { rotation: rotation + angleStep, length, constraint }
+  })
 
-      if (typeof constraint === 'number') {
-        const halfConstraint = constraint / 2
-        const clampedRotation = clamp(steppedRotation, -halfConstraint, halfConstraint)
-        return { length, rotation: clampedRotation, constraint }
-      }
+  const adjustedJoints = getJointTransforms(withAngleStep, base).transforms
 
-      if (isExactRotation(constraint)) {
-        return { length, rotation: constraint.value, constraint }
+  const withConstraints = withAngleStep.map(({ length, rotation, constraint }, index) => {
+    if (constraint === undefined) return { length, rotation }
+
+    if (typeof constraint === 'number') {
+      const halfConstraint = constraint / 2
+      const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
+      return { length, rotation: clampedRotation, constraint }
+    }
+
+    if (isExactRotation(constraint)) {
+      if (constraint.type === 'global') {
+        const targetRotation = constraint.value
+        const currentRotation = adjustedJoints[index + 1]!.rotation
+        const deltaRotation = targetRotation - currentRotation
+
+        return { length, rotation: rotation + deltaRotation, constraint }
       } else {
-        const clampedRotation = clamp(steppedRotation, constraint.min, constraint.max)
-        return { length, rotation: clampedRotation, constraint }
+        return { length, rotation: constraint.value, constraint }
       }
-    })
+    } else {
+      const clampedRotation = clamp(rotation, constraint.min, constraint.max)
+      return { length, rotation: clampedRotation, constraint }
+    }
+  })
 
   return {
-    links: result,
-    getErrorDistance: () => getErrorDistance(result, base, target),
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, base, target),
     isWithinAcceptedError: undefined,
   }
 }
@@ -164,6 +173,7 @@ function copyLink({ rotation, length, constraint: constraint }: Link): Link {
 
 interface ExactRotation {
   value: number
+  type: 'global' | 'local'
 }
 
 function isExactRotation(rotation: number | Range | ExactRotation): rotation is ExactRotation {

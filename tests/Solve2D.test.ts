@@ -207,8 +207,8 @@ describe('solve', () => {
     expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
   })
 
-  it('Respects exact constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraint: { value: Math.PI / 4 } }]
+  it('Respects exact local constraint', () => {
+    let links: Link[] = [{ rotation: 0, length: 1, constraint: { value: Math.PI / 4, type: 'local' } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
     const result = solve(links, base, target, { learningRate: 10e-2 })
@@ -216,6 +216,22 @@ describe('solve', () => {
 
     const jointTransforms = getJointTransforms(links, base)
     expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('Respects exact global constraint', () => {
+    let links: Link[] = [
+      { rotation: 0, length: 1 },
+      { rotation: 0, length: 1 },
+      { rotation: 0, length: 1, constraint: { value: Math.PI / 4, type: 'global' } },
+    ]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+    const result = solve(links, base, target, { learningRate: 10e-2 })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+
+    expect(jointTransforms.transforms[3]?.rotation).toBe(Math.PI / 4)
   })
 })
 
