@@ -2,6 +2,7 @@ import { clamp } from './math/MathUtils'
 import { V2, V2O } from '.'
 import { SolveOptions } from './SolveOptions'
 import { Range } from './Range'
+
 export interface Link {
   /**
    * The rotation at the base of the link
@@ -11,7 +12,7 @@ export interface Link {
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
    */
-  constraint?: number | Range
+  constraint?: number | Range | ExactRotation
   length: number
 }
 
@@ -88,13 +89,17 @@ export function solve(links: Link[], base: JointTransform, target: V2, options?:
       if (constraint === undefined) return { length, rotation: steppedRotation }
 
       if (typeof constraint === 'number') {
-        const halfContraint = constraint / 2
-        const clampedRotation = clamp(steppedRotation, -halfContraint, halfContraint)
+        const halfConstraint = constraint / 2
+        const clampedRotation = clamp(steppedRotation, -halfConstraint, halfConstraint)
         return { length, rotation: clampedRotation, constraint }
       }
 
-      const clampedRotation = clamp(steppedRotation, constraint.min, constraint.max)
-      return { length, rotation: clampedRotation, constraint }
+      if (isExactRotation(constraint)) {
+        return { length, rotation: constraint.value, constraint }
+      } else {
+        const clampedRotation = clamp(steppedRotation, constraint.min, constraint.max)
+        return { length, rotation: clampedRotation, constraint }
+      }
     })
 
   return {
@@ -153,4 +158,12 @@ export function getJointTransforms(
 
 function copyLink({ rotation, length, constraint: constraint }: Link): Link {
   return { rotation, length, constraint: constraint === undefined ? undefined : constraint }
+}
+
+interface ExactRotation {
+  value: number
+}
+
+function isExactRotation(rotation: number | Range | ExactRotation): rotation is ExactRotation {
+  return (rotation as ExactRotation).value !== undefined
 }
