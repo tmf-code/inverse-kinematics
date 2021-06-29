@@ -11,7 +11,7 @@ import { Target } from '../components/Target'
 
 const base: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-function ThreeDimension() {
+export default function Basic() {
   const [target, setTarget] = useState([500, 50, 0] as V3)
   const [links, setLinks] = useState<Solve3D.Link[]>([])
 
@@ -77,10 +77,13 @@ function ThreeDimension() {
   )
 }
 
-export default ThreeDimension
-
 const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve3D.Link[] =>
   Array.from({ length: linkCount }).map(() => ({
     length: linkLength,
-    constraint: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    rotation: QuaternionO.zeroRotation(),
+    constraints: {
+      pitch: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+      yaw: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+      roll: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    },
   }))
