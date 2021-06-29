@@ -5,6 +5,7 @@ import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
 import ExactRotation from './demos/two-dimensional/ExactRotation'
+import GlobalRotation from './demos/two-dimensional/GlobalRotation'
 
 function App() {
   return (
@@ -15,6 +16,9 @@ function App() {
       </Route>
       <Route path="/exact">
         <ExactRotation />
+      </Route>
+      <Route path="/global">
+        <GlobalRotation />
       </Route>
       <Route exact path="/">
         <TwoDimension />
@@ -46,6 +50,9 @@ function Menu() {
         </li>
         <li className={pathname === '/exact' ? 'highlighted' : ''}>
           <Link to="/exact">Exact rotation example</Link>
+        </li>
+        <li className={pathname === '/global' ? 'highlighted' : ''}>
+          <Link to="/global">Global rotation example</Link>
         </li>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D example</Link>
