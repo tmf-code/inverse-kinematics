@@ -4,6 +4,7 @@ import SkinnedMeshExample from './demos/three-dimensional/skinned-mesh/SkinnedMe
 import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
+import ExactRotation from './demos/two-dimensional/ExactRotation'
 
 function App() {
   return (
@@ -11,6 +12,9 @@ function App() {
       <Menu />
       <Route path="/2d">
         <TwoDimension />
+      </Route>
+      <Route path="/exact">
+        <ExactRotation />
       </Route>
       <Route exact path="/">
         <TwoDimension />
@@ -39,6 +43,9 @@ function Menu() {
       <ul>
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
           <Link to="/2d">2D example</Link>
+        </li>
+        <li className={pathname === '/exact' ? 'highlighted' : ''}>
+          <Link to="/exact">Exact rotation example</Link>
         </li>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D example</Link>
