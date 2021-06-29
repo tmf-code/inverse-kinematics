@@ -1,7 +1,7 @@
 import { SolveOptions, V2 } from '../src'
 import { Link, getJointTransforms, getErrorDistance, solve, JointTransform, SolveResult } from '../src/Solve2D'
 
-describe('forwardPass', () => {
+describe('getJointTransforms', () => {
   it('Returns base in empty chain', () => {
     const links: Link[] = []
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
