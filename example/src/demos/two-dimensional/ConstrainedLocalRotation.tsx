@@ -84,9 +84,11 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
       return {
         length: linkLength,
         constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'local' },
+        rotation: 0,
       }
     }
     return {
       length: linkLength,
+      rotation: 0,
     }
   })

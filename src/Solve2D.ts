@@ -7,7 +7,7 @@ export interface Link {
   /**
    * The rotation at the base of the link
    */
-  rotation?: number
+  rotation: number
   /**
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
@@ -165,6 +165,14 @@ export function getJointTransforms(
   const effectorRotation = transforms[transforms.length - 1]!.rotation
 
   return { transforms, effectorPosition, effectorRotation }
+}
+
+export function buildLink(length: number, rotation = 0, constraint?: number | Range | ExactRotation): Link {
+  return {
+    length,
+    rotation,
+    constraint,
+  }
 }
 
 function copyLink({ rotation, length, constraint: constraint }: Link): Link {

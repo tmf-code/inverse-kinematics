@@ -1,12 +1,12 @@
 import { Canvas } from '@react-three/fiber'
 import { MathUtils, Solve2D, V2 } from 'inverse-kinematics'
-import React, { useEffect, useRef, useState } from 'react'
+import { useControls } from 'leva'
+import React, { useEffect, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'
 import { JointTransforms } from './components/JointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
-import { useControls } from 'leva'
 
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -84,9 +84,8 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
       return {
         length: linkLength,
         constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
+        rotation: 0,
       }
     }
-    return {
-      length: linkLength,
-    }
+    return Solve2D.buildLink(linkLength)
   })

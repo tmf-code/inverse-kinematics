@@ -1,5 +1,13 @@
 import { SolveOptions, V2, V2O } from '../src'
-import { Link, getJointTransforms, getErrorDistance, solve, JointTransform, SolveResult } from '../src/Solve2D'
+import {
+  buildLink,
+  getErrorDistance,
+  getJointTransforms,
+  JointTransform,
+  Link,
+  solve,
+  SolveResult,
+} from '../src/Solve2D'
 
 describe('getJointTransforms', () => {
   it('Returns base in empty chain', () => {
@@ -19,7 +27,7 @@ describe('getJointTransforms', () => {
   })
 
   it('Respects base rotation', () => {
-    const links: Link[] = [{ length: 50 }]
+    const links: Link[] = [buildLink(50)]
     const pivotTransform = { position: [0, 0] as V2, rotation: Math.PI / 2 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
