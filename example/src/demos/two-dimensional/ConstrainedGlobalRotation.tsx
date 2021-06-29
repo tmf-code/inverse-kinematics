@@ -10,7 +10,7 @@ import { useControls } from 'leva'
 
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
-export default function GlobalRotation() {
+export default function ConstrainedGlobalRotation() {
   const [target, setTarget] = useState([500, 50] as V2)
   const [links, setLinks] = useState<Solve2D.Link[]>([])
 

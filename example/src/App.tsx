@@ -4,8 +4,8 @@ import SkinnedMeshExample from './demos/three-dimensional/skinned-mesh/SkinnedMe
 import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
-import ExactRotation from './demos/two-dimensional/ExactRotation'
-import GlobalRotation from './demos/two-dimensional/GlobalRotation'
+import ConstrainedLocalRotation from './demos/two-dimensional/ConstrainedLocalRotation'
+import ConstrainedGlobalRotation from './demos/two-dimensional/ConstrainedGlobalRotation'
 
 function App() {
   return (
@@ -14,11 +14,11 @@ function App() {
       <Route path="/2d">
         <TwoDimension />
       </Route>
-      <Route path="/exact">
-        <ExactRotation />
+      <Route path="/local">
+        <ConstrainedLocalRotation />
       </Route>
       <Route path="/global">
-        <GlobalRotation />
+        <ConstrainedGlobalRotation />
       </Route>
       <Route exact path="/">
         <TwoDimension />
@@ -48,11 +48,11 @@ function Menu() {
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
           <Link to="/2d">2D example</Link>
         </li>
-        <li className={pathname === '/exact' ? 'highlighted' : ''}>
-          <Link to="/exact">Exact rotation example</Link>
+        <li className={pathname === '/local' ? 'highlighted' : ''}>
+          <Link to="/local">Constrained local rotation example</Link>
         </li>
         <li className={pathname === '/global' ? 'highlighted' : ''}>
-          <Link to="/global">Global rotation example</Link>
+          <Link to="/global">Constrained global rotation example</Link>
         </li>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D example</Link>

@@ -10,7 +10,7 @@ import { useControls } from 'leva'
 
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
-export default function ExactRotation() {
+export default function ConstrainedLocalRotation() {
   const [target, setTarget] = useState([500, 50] as V2)
   const [links, setLinks] = useState<Solve2D.Link[]>([])
 
@@ -83,7 +83,7 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
     if (index === linkCount - 1) {
       return {
         length: linkLength,
-        constraint: { value: (endEffectorRotation * Math.PI) / 180 },
+        constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'local' },
       }
     }
     return {
