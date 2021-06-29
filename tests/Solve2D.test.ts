@@ -206,6 +206,17 @@ describe('solve', () => {
     const jointTransforms = getJointTransforms(links, base)
     expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
   })
+
+  it('Respects exact constraint', () => {
+    let links: Link[] = [{ rotation: 0, length: 1, constraint: { value: Math.PI / 4 } }]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+    const result = solve(links, base, target, { learningRate: 10e-2 })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
 })
 
 function cloneDeep<T>(object: T): T {
