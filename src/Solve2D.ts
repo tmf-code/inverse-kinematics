@@ -138,6 +138,7 @@ export function getJointTransforms(
 ): {
   transforms: JointTransform[]
   effectorPosition: V2
+  effectorRotation: number
 } {
   const transforms = [joint]
 
@@ -152,8 +153,9 @@ export function getJointTransforms(
   }
 
   const effectorPosition = transforms[transforms.length - 1]!.position
+  const effectorRotation = transforms[transforms.length - 1]!.rotation
 
-  return { transforms, effectorPosition }
+  return { transforms, effectorPosition, effectorRotation }
 }
 
 function copyLink({ rotation, length, constraint: constraint }: Link): Link {
