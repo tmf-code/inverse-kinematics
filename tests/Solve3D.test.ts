@@ -106,6 +106,43 @@ describe('forwardPass', () => {
       { position: [200, 50, 0], rotation: QuaternionO.zeroRotation() },
     ])
   })
+
+  it('Respects exact local constraint', () => {
+    let links: Link[] = [
+      {
+        rotation: QuaternionO.zeroRotation(),
+        length: 1,
+        constraints: { pitch: { value: Math.PI / 4, type: 'local' } },
+      },
+    ]
+    const target: V3 = [0, 1, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+    const result = solve(links, base, target, { learningRate: 10e-2 })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('Respects exact global constraint', () => {
+    let links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), length: 1 },
+      { rotation: QuaternionO.zeroRotation(), length: 1 },
+      {
+        rotation: QuaternionO.zeroRotation(),
+        length: 1,
+        constraints: { pitch: { value: Math.PI / 4, type: 'global' } },
+      },
+    ]
+    const target: V3 = [0, 1, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+    const result = solve(links, base, target, { learningRate: 10e-2 })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+
+    expect(jointTransforms.transforms[3]?.rotation).toBe(Math.PI / 4)
+  })
 })
 
 describe('solve', () => {
