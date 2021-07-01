@@ -92,6 +92,14 @@ describe('Quaternion Operations', () => {
 
     expect(QuaternionO.clamp(input, lowerBound, upperBound)).toBeCloseToQuaternion(input)
   })
+
+  it('Throws if clamp lower bound > upper bound', () => {
+    const input: Quaternion = [0, 0, 0, 1]
+    const lowerBound: V3 = [Math.PI / 2, 0, 0]
+    const upperBound: V3 = [0, 0, 0]
+
+    expect(() => QuaternionO.clamp(input, lowerBound, upperBound)).toThrow()
+  })
 })
 
 declare global {
