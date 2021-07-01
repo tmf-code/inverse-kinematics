@@ -113,7 +113,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
         pitchMin = -pitch / 2
         pitchMax = pitch / 2
       } else {
-        pitchMin = pitch?.min ?? Infinity
+        pitchMin = pitch?.min ?? -Infinity
         pitchMax = pitch?.max ?? Infinity
       }
 
@@ -123,7 +123,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
         yawMin = -yaw / 2
         yawMax = yaw / 2
       } else {
-        yawMin = yaw?.min ?? Infinity
+        yawMin = yaw?.min ?? -Infinity
         yawMax = yaw?.max ?? Infinity
       }
 
@@ -133,7 +133,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
         rollMin = -roll / 2
         rollMax = roll / 2
       } else {
-        rollMin = roll?.min ?? Infinity
+        rollMin = roll?.min ?? -Infinity
         rollMax = roll?.max ?? Infinity
       }
 
