@@ -1,4 +1,4 @@
-import { QuaternionO, Solve3D, SolveOptions, V3 } from '../src'
+import { Quaternion, QuaternionO, Solve3D, SolveOptions, V3, V3O } from '../src'
 import { Link, getJointTransforms, getErrorDistance, solve, JointTransform, SolveResult } from '../src/Solve3D'
 
 describe('forwardPass', () => {
@@ -162,6 +162,70 @@ describe('solve', () => {
       expect(errorBefore).toEqual(errorAfter)
     }
   })
+
+  it('Respects no rotation unary constraint', () => {
+    const links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), length: 50, constraints: { yaw: 0, roll: 0, pitch: 0 } },
+    ]
+    const target: V3 = [0, 50, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidNotImprove(links, base, target, 3)
+  })
+
+  it('Respects no rotation binary constraint', () => {
+    const links: Link[] = [
+      {
+        rotation: QuaternionO.zeroRotation(),
+        length: 50,
+        constraints: { yaw: { min: 0, max: 0 }, roll: { min: 0, max: 0 }, pitch: { min: 0, max: 0 } },
+      },
+    ]
+    const target: V3 = [0, 50, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidNotImprove(links, base, target, 3)
+  })
+
+  it('Respects binary constraint', () => {
+    let links: Link[] = [
+      {
+        rotation: QuaternionO.zeroRotation(),
+        length: 1,
+        constraints: {
+          yaw: 0,
+          // Roll about z, causes x points vector to rotate to point up at y
+          roll: { min: -Math.PI / 4, max: Math.PI / 4 },
+          pitch: 0,
+        },
+      },
+    ]
+    const target: V3 = [0, 1, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    let error: number
+    let lastError = getErrorDistance(links, base, target)
+    while (true) {
+      const result = solve(links, base, target, { learningRate: 10e-3 })
+      links = result.links
+      error = result.getErrorDistance()
+
+      const errorDifference = lastError - error
+      const didNotImprove = errorDifference <= 0
+      if (didNotImprove) break
+
+      lastError = error
+    }
+
+    // Length 1, pointing 45 degrees on way from x to y
+    const expectedError = V3O.euclideanDistance(target, [0.7071, 0.7071, 0])
+    expect(error).toBeCloseTo(expectedError)
+
+    const jointTransforms = getJointTransforms(links, base)
+
+    // Quaternion from euler rotation about z 45 degrees
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseToQuaternion([0, 0, 0.3826834, 0.9238795])
+  })
 })
 
 function cloneDeep<T>(object: T): T {
@@ -183,3 +247,63 @@ function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V3
     expect(errorBefore).toBeGreaterThan(errorAfter)
   }
 }
+
+function solveAndCheckDidNotImprove(links: Link[], base: JointTransform, target: V3, times: number) {
+  const options: SolveOptions = {
+    acceptedError: 0,
+  }
+
+  let solveResult: undefined | SolveResult
+
+  for (let index = 0; index < times; index++) {
+    const linksThisIteration = solveResult?.links ?? links
+    const errorBefore = getErrorDistance(linksThisIteration, base, target)
+    solveResult = solve(linksThisIteration, base, target, options)
+    const errorAfter = solveResult.getErrorDistance()
+    expect(errorBefore).not.toBeGreaterThan(errorAfter)
+  }
+}
+
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeCloseToQuaternion<Quaternion>(expected: Quaternion): R
+    }
+  }
+}
+
+expect.extend({
+  toBeCloseToQuaternion(received: Quaternion, expected: Quaternion, precision = 2) {
+    let pass = true
+    received.forEach((_, index) => {
+      const receivedComponent = received[index]!
+      const expectedComponent = expected[index]!
+      let expectedDiff = 0
+      let receivedDiff = 0
+
+      if (pass === false) return
+
+      if (receivedComponent === Infinity && expectedComponent === Infinity) {
+        return
+      } else if (receivedComponent === -Infinity && expectedComponent === -Infinity) {
+        return
+      } else {
+        expectedDiff = Math.pow(10, -precision) / 2
+        receivedDiff = Math.abs(expectedComponent - receivedComponent)
+        pass = receivedDiff < expectedDiff
+      }
+    })
+
+    if (pass) {
+      return {
+        message: () => `expected ${received} not to be close to ${expected}`,
+        pass: true,
+      }
+    } else {
+      return {
+        message: () => `expected ${received} to be close to ${expected}`,
+        pass: false,
+      }
+    }
+  },
+})
