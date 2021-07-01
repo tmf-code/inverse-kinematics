@@ -60,7 +60,14 @@ export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Q
   const [x, y, z] = V3O.fromArray(
     rotationAxis.map((component, index) => {
       const angle = 2 * Math.atan(component / w)
-      const clampedAngle = MathUtils.clamp(angle, lowerBound[index]!, upperBound[index]!)
+
+      const lower = lowerBound[index]!
+      const upper = upperBound[index]!
+      if (lower > upper)
+        throw new Error(
+          `Lower bound should be less than upper bound for component ${index}. Lower: ${lower}, upper: ${upper}`,
+        )
+      const clampedAngle = MathUtils.clamp(angle, lower, upper)
       return Math.tan(0.5 * clampedAngle)
     }),
   )
