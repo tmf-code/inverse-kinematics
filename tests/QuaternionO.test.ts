@@ -84,6 +84,14 @@ describe('Quaternion Operations', () => {
 
     expect(QuaternionO.clamp(input, lowerBound, upperBound)).toBeCloseToQuaternion(expected)
   })
+
+  it('Ignores clamping inside range -Infinity - +Infinity', () => {
+    const input: Quaternion = [-oneOnRootTwo, 0, 0, oneOnRootTwo]
+    const lowerBound: V3 = [-Infinity, 0, 0]
+    const upperBound: V3 = [Infinity, 0, 0]
+
+    expect(QuaternionO.clamp(input, lowerBound, upperBound)).toBeCloseToQuaternion(input)
+  })
 })
 
 declare global {
