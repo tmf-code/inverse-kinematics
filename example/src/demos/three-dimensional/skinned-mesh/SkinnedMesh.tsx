@@ -1,29 +1,14 @@
 import { OrbitControls, useGLTF } from '@react-three/drei'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3, V3O } from 'inverse-kinematics'
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Bone, MeshNormalMaterial, Quaternion as ThreeQuaternion, SkeletonHelper, SkinnedMesh, Vector3 } from 'three'
+import React, { Suspense, useMemo, useRef, useState } from 'react'
+import { Bone, MeshNormalMaterial, Quaternion as ThreeQuaternion, SkinnedMesh, Vector3 } from 'three'
 import { useAnimationFrame } from '../../../hooks/useAnimationFrame'
-import { Base } from '../components/Base'
 import { JointTransforms } from '../components/JointTransforms'
 import { Logger } from '../components/Logger'
 import { Target } from '../components/Target'
 import { Background } from './components/Background'
 import tubeSrc from './tube.gltf?url'
-
-function getInitialLinks(linkBones: Bone[]): Solve3D.Link[] {
-  const initialLinks: Solve3D.Link[] = linkBones.map((bone) => {
-    const previousBonePosition = new Vector3()
-    const currentBonePosition = new Vector3()
-    bone.parent!.getWorldPosition(previousBonePosition)
-    bone.getWorldPosition(currentBonePosition)
-    return {
-      length: V3O.euclideanDistance(V3O.fromVector3(previousBonePosition), V3O.fromVector3(currentBonePosition)),
-      rotation: QuaternionO.fromObject(bone.quaternion),
-    }
-  })
-  return initialLinks
-}
 
 function SkinnedMeshExample() {
   const { nodes } = useGLTF(tubeSrc) as unknown as {
@@ -41,6 +26,7 @@ function SkinnedMeshExample() {
       position: V3O.fromVector3(baseBone.getWorldPosition(new Vector3())),
       rotation: QuaternionO.fromObject(baseBone.getWorldQuaternion(new ThreeQuaternion())),
     }
+
     // get link bones from base
     let currentBone = baseBone
     const bones: Bone[] = [baseBone]
@@ -70,9 +56,7 @@ function SkinnedMeshExample() {
       }
     })
 
-    console.log(links, bones)
-
-    return { base, bones: bones, links }
+    return { base, bones, links }
   }, [nodes])
 
   const [target, setTarget] = useState([500, 50, 0] as V3)
