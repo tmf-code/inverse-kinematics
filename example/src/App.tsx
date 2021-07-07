@@ -44,27 +44,30 @@ function Menu() {
   return (
     <div style={{ position: 'absolute', zIndex: 10 }}>
       <h2>Inverse kinematics examples</h2>
+      <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
+      <h3>2d</h3>
       <ul>
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
-          <Link to="/2d">2D example</Link>
+          <Link to="/2d">2D basic</Link>
         </li>
         <li className={pathname === '/local' ? 'highlighted' : ''}>
-          <Link to="/local">Constrained local rotation example</Link>
+          <Link to="/local">Constrained local rotation</Link>
         </li>
         <li className={pathname === '/global' ? 'highlighted' : ''}>
-          <Link to="/global">Constrained global rotation example</Link>
+          <Link to="/global">Constrained global rotation</Link>
         </li>
+        <li></li>
+      </ul>
+      <h3>3d</h3>
+      <ul>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
-          <Link to="/3d">3D example</Link>
+          <Link to="/3d">3D basic</Link>
         </li>
         <li className={pathname === '/three-js' ? 'highlighted' : ''}>
-          <Link to="/three-js">Three.js example</Link>
+          <Link to="/three-js">Three.js</Link>
         </li>
         <li>
-          <Link to="/skinned-mesh">Skinned Mesh Demo</Link>
-        </li>
-        <li>
-          <a href="https://github.com/tmf-code/inverse-kinematics">Github page</a>
+          <Link to="/skinned-mesh">Three js Skinned Mesh</Link>
         </li>
       </ul>
     </div>
