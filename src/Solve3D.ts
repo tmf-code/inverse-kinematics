@@ -8,17 +8,25 @@ export interface Link {
    * The rotation at the base of the link
    */
   rotation: Quaternion
+
   /**
-   * The the angle which this link can rotate around it's joint
-   * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
+   * undefined: No constraint
+   *
+   * {pitch, yaw, roll}: Range | Number
+   *
+   * Range: minimum angle, maximum angle (radians), positive is anticlockwise from previous Link's direction vector
+   *
+   * number: the range of rotation (radian) about the previous links direction vector. A rotation of 90 deg would be 45 deg either direction
+   *
+   * ExactRotation: Either a global, or local rotation which the Link is locked to
    */
   constraints?: Constraints
   length: number
 }
 
-export type Constraints = EulerContraint | ExactRotation
+type Constraints = EulerConstraint | ExactRotation
 
-interface EulerContraint {
+interface EulerConstraint {
   /**
    * Rotation about X
    */
@@ -35,6 +43,11 @@ interface EulerContraint {
 
 interface ExactRotation {
   value: Quaternion
+  /**
+   * 'local': Relative to previous links direction vector
+   *
+   * 'global': Relative to the baseJoints world transform
+   */
   type: 'global' | 'local'
 }
 
@@ -286,6 +299,6 @@ function copyConstraints(constraints: Constraints): Constraints {
   return result
 }
 
-function isExactRotation(rotation: EulerContraint | ExactRotation): rotation is ExactRotation {
+function isExactRotation(rotation: EulerConstraint | ExactRotation): rotation is ExactRotation {
   return (rotation as ExactRotation).value !== undefined
 }
