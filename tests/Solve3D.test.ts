@@ -112,16 +112,18 @@ describe('forwardPass', () => {
       {
         rotation: QuaternionO.zeroRotation(),
         length: 1,
-        constraints: { pitch: { value: Math.PI / 4, type: 'local' } },
+        constraints: { value: QuaternionO.fromEulerAngles([Math.PI / 4, 0, 0]), type: 'local' },
       },
     ]
     const target: V3 = [0, 1, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
-    const result = solve(links, base, target, { learningRate: 10e-2 })
+    const result = solve(links, base, target, { learningRate: 0 })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
-    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseToQuaternion(
+      QuaternionO.fromEulerAngles([Math.PI / 4, 0, 0]),
+    )
   })
 
   it('Respects exact global constraint', () => {
@@ -131,17 +133,19 @@ describe('forwardPass', () => {
       {
         rotation: QuaternionO.zeroRotation(),
         length: 1,
-        constraints: { pitch: { value: Math.PI / 4, type: 'global' } },
+        constraints: { value: QuaternionO.fromEulerAngles([Math.PI / 2, 0, 0]), type: 'global' },
       },
     ]
     const target: V3 = [0, 1, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
-    const result = solve(links, base, target, { learningRate: 10e-2 })
+    const result = solve(links, base, target, { learningRate: 0 })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
 
-    expect(jointTransforms.transforms[3]?.rotation).toBe(Math.PI / 4)
+    expect(jointTransforms.transforms[3]?.rotation).toBeCloseToQuaternion(
+      QuaternionO.fromEulerAngles([Math.PI / 2, 0, 0]),
+    )
   })
 })
 
@@ -333,12 +337,18 @@ expect.extend({
 
     if (pass) {
       return {
-        message: () => `expected ${received} not to be close to ${expected}`,
+        message: () =>
+          `expected ${received.map((number) => number.toPrecision(precision))} not to be close to  ${expected.map(
+            (number) => number.toPrecision(precision),
+          )}`,
         pass: true,
       }
     } else {
       return {
-        message: () => `expected ${received} to be close to ${expected}`,
+        message: () =>
+          `expected  ${received.map((number) => number.toPrecision(precision))} to be close to ${expected.map(
+            (number) => number.toPrecision(precision),
+          )}`,
         pass: false,
       }
     }

@@ -1,5 +1,6 @@
 import { QuaternionO, SolveOptions, V3O } from '.'
 import { Quaternion } from './math/Quaternion'
+import { inverse } from './math/QuaternionO'
 import { V3 } from './math/V3'
 import { Range } from './Range'
 
@@ -16,10 +17,30 @@ export interface Link {
   length: number
 }
 
-export interface Constraints {
+export type Constraints = EulerContraint | ExactRotation
+
+interface EulerContraint {
+  /**
+   * Rotation about X
+   */
   pitch?: number | Range
+  /**
+   * Rotation about Y
+   */
   yaw?: number | Range
+  /**
+   * Rotation about Z
+   */
   roll?: number | Range
+}
+
+interface ExactRotation {
+  value: Quaternion
+  type: 'global' | 'local'
+}
+
+function isExactRotation(rotation: EulerContraint | ExactRotation): rotation is ExactRotation {
+  return (rotation as ExactRotation).value !== undefined
 }
 
 export interface SolveResult {
@@ -71,8 +92,8 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  const result: Link[] = links
-    .map(({ length, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
+  const withAngleStep: Link[] = links.map(
+    ({ length, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
       // For each, calculate partial derivative, sum to give full numerical derivative
       const angleStep: V3 = V3O.fromArray(
         [0, 0, 0].map((_, v3Index) => {
@@ -99,53 +120,82 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
         }),
       )
 
-      return { link: { length, rotation, constraints }, angleStep: QuaternionO.fromEulerAngles(angleStep) }
-    })
-    .map(({ link: { length, rotation, constraints }, angleStep }) => {
-      const steppedRotation = QuaternionO.multiply(rotation, angleStep)
-      if (constraints === undefined) return { length, rotation: steppedRotation }
+      const steppedRotation = QuaternionO.multiply(rotation, QuaternionO.fromEulerAngles(angleStep))
 
-      const { pitch, yaw, roll } = constraints
+      return { length, rotation: steppedRotation, constraints }
+    },
+  )
 
-      let pitchMin: number
-      let pitchMax: number
-      if (typeof pitch === 'number') {
-        pitchMin = -pitch / 2
-        pitchMax = pitch / 2
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+
+  const withConstraints = withAngleStep.map(({ length, rotation, constraints }, index) => {
+    if (constraints === undefined) return { length, rotation }
+
+    if (isExactRotation(constraints)) {
+      if (constraints.type === 'global') {
+        const targetRotation = constraints.value
+        const currentRotation = adjustedJoints[index + 1]!.rotation
+        const adjustedRotation = QuaternionO.multiply(
+          QuaternionO.multiply(rotation, QuaternionO.inverse(currentRotation)),
+          targetRotation,
+        )
+
+        return { length, rotation: adjustedRotation, constraints }
       } else {
-        pitchMin = pitch?.min ?? -Infinity
-        pitchMax = pitch?.max ?? Infinity
+        return { length, rotation: constraints.value, constraints }
       }
+    }
 
-      let yawMin: number
-      let yawMax: number
-      if (typeof yaw === 'number') {
-        yawMin = -yaw / 2
-        yawMax = yaw / 2
-      } else {
-        yawMin = yaw?.min ?? -Infinity
-        yawMax = yaw?.max ?? Infinity
-      }
+    const { pitch, yaw, roll } = constraints
 
-      let rollMin: number
-      let rollMax: number
-      if (typeof roll === 'number') {
-        rollMin = -roll / 2
-        rollMax = roll / 2
-      } else {
-        rollMin = roll?.min ?? -Infinity
-        rollMax = roll?.max ?? Infinity
-      }
+    let pitchMin: number
+    let pitchMax: number
+    if (typeof pitch === 'number') {
+      pitchMin = -pitch / 2
+      pitchMax = pitch / 2
+    } else if (pitch === undefined) {
+      pitchMin = -Infinity
+      pitchMax = Infinity
+    } else {
+      pitchMin = pitch.min
+      pitchMax = pitch.max
+    }
 
-      const lowerBound: V3 = [pitchMin, yawMin, rollMin]
-      const upperBound: V3 = [pitchMax, yawMax, rollMax]
-      const clampedRotation = QuaternionO.clamp(steppedRotation, lowerBound, upperBound)
-      return { length, rotation: clampedRotation, constraints: copyConstraints(constraints) }
-    })
+    let yawMin: number
+    let yawMax: number
+    if (typeof yaw === 'number') {
+      yawMin = -yaw / 2
+      yawMax = yaw / 2
+    } else if (yaw === undefined) {
+      yawMin = -Infinity
+      yawMax = Infinity
+    } else {
+      yawMin = yaw.min
+      yawMax = yaw.max
+    }
+
+    let rollMin: number
+    let rollMax: number
+    if (typeof roll === 'number') {
+      rollMin = -roll / 2
+      rollMax = roll / 2
+    } else if (roll === undefined) {
+      rollMin = -Infinity
+      rollMax = Infinity
+    } else {
+      rollMin = roll.min
+      rollMax = roll.max
+    }
+
+    const lowerBound: V3 = [pitchMin, yawMin, rollMin]
+    const upperBound: V3 = [pitchMax, yawMax, rollMax]
+    const clampedRotation = QuaternionO.clamp(rotation, lowerBound, upperBound)
+    return { length, rotation: clampedRotation, constraints: copyConstraints(constraints) }
+  })
 
   return {
-    links: result,
-    getErrorDistance: () => getErrorDistance(result, baseJoint, target),
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
     isWithinAcceptedError: undefined,
   }
 }
@@ -212,8 +262,13 @@ function copyLink({ rotation, length, constraints }: Link): Link {
   return { rotation, length, constraints: constraints === undefined ? undefined : copyConstraints(constraints) }
 }
 
-function copyConstraints({ pitch, yaw, roll }: Constraints): Constraints {
+function copyConstraints(constraints: Constraints): Constraints {
   const result: Constraints = {}
+
+  if (isExactRotation(constraints)) {
+    return { type: constraints.type, value: [...constraints.value] }
+  }
+  const { pitch, yaw, roll } = constraints
 
   if (typeof pitch === 'number') {
     result.pitch = pitch
@@ -234,4 +289,8 @@ function copyConstraints({ pitch, yaw, roll }: Constraints): Constraints {
   }
 
   return result
+}
+
+function precision2(value: number): string {
+  return value.toFixed(2)
 }
