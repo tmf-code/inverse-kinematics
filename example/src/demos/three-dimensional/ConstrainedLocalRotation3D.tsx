@@ -1,23 +1,24 @@
 import { Canvas } from '@react-three/fiber'
-import { MathUtils, Solve2D, V2 } from 'inverse-kinematics'
-import { useControls } from 'leva'
-import React, { useEffect, useState } from 'react'
+import { MathUtils, QuaternionO, Solve3D, V2, V3 } from 'inverse-kinematics'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAnimationFrame } from '../../hooks/useAnimationFrame'
 import { Base } from './components/Base'
 import { JointTransforms } from './components/JointTransforms'
 import { Logger } from './components/Logger'
 import { Target } from './components/Target'
+import { useControls } from 'leva'
+import { OrbitControls } from '@react-three/drei'
 
-const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
+const base: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-export default function ConstrainedGlobalRotation() {
-  const [target, setTarget] = useState([500, 50] as V2)
-  const [links, setLinks] = useState<Solve2D.Link[]>([])
+export default function ConstrainedLocalRotation3D() {
+  const [target, setTarget] = useState([500, 50, 0] as V3)
+  const [links, setLinks] = useState<Solve3D.Link[]>([])
 
   const { linkCount, linkLength, endEffectorRotation } = useControls({
     linkCount: { value: 4, min: 0, max: 50, step: 1 },
-    linkLength: { value: 200, min: 1, max: 200, step: 10 },
-    endEffectorRotation: { value: 0, min: -180, max: 180, step: 15 },
+    linkLength: { value: 1, min: 0.1, max: 2, step: 0.1 },
+    endEffectorRotation: { value: 0, min: -180, max: 180, step: 5 },
   })
 
   useEffect(() => {
@@ -29,22 +30,22 @@ export default function ConstrainedGlobalRotation() {
 
     function learningRate(errorDistance: number): number {
       const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
-      const cutoff = 0.1
+      const cutoff = 0.5
 
       if (relativeDistanceToTarget > cutoff) {
-        return 10e-6
+        return 10e-3
       }
 
       // result is between 0 and 1
       const remainingDistance = relativeDistanceToTarget / 0.02
-      const minimumLearningRate = 10e-7
+      const minimumLearningRate = 10e-4
 
-      return minimumLearningRate + remainingDistance * 10e-7
+      return (minimumLearningRate + remainingDistance * 10e-4) / knownRangeOfMovement
     }
 
-    const result = Solve2D.solve(links, base, target, {
+    const result = Solve3D.solve(links, base, target, {
       learningRate,
-      acceptedError: 10,
+      acceptedError: 0.1,
     }).links
 
     links.forEach((_, index) => {
@@ -53,11 +54,7 @@ export default function ConstrainedGlobalRotation() {
   })
 
   return (
-    <div
-      onClick={({ clientX, clientY }) =>
-        setTarget([clientX - window.innerWidth / 2, -clientY + window.innerHeight / 2])
-      }
-    >
+    <div>
       <Canvas
         style={{
           width: '100%',
@@ -65,27 +62,32 @@ export default function ConstrainedGlobalRotation() {
           position: 'absolute',
           backgroundColor: 'aquamarine',
         }}
-        orthographic
         linear
-        camera={{ near: -1000 }}
       >
+        <OrbitControls />
         <JointTransforms links={links} base={base} />
         <Base base={base} links={links} />
-        <Target position={target} />
+        <Target position={target} setPosition={setTarget} />
       </Canvas>
       <Logger target={target} links={links} base={base} />
     </div>
   )
 }
 
-const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: number): Solve2D.Link[] =>
+const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: number): Solve3D.Link[] =>
   Array.from({ length: linkCount }).map((_, index) => {
     if (index === linkCount - 1) {
       return {
         length: linkLength,
-        constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
-        rotation: 0,
+        constraints: {
+          value: QuaternionO.fromEulerAngles([0, 0, (endEffectorRotation * Math.PI) / 180]),
+          type: 'local',
+        },
+        rotation: QuaternionO.zeroRotation(),
       }
     }
-    return Solve2D.buildLink(linkLength)
+    return {
+      length: linkLength,
+      rotation: QuaternionO.zeroRotation(),
+    }
   })

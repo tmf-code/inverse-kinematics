@@ -1,6 +1,5 @@
 import { QuaternionO, SolveOptions, V3O } from '.'
 import { Quaternion } from './math/Quaternion'
-import { inverse } from './math/QuaternionO'
 import { V3 } from './math/V3'
 import { Range } from './Range'
 
@@ -37,10 +36,6 @@ interface EulerContraint {
 interface ExactRotation {
   value: Quaternion
   type: 'global' | 'local'
-}
-
-function isExactRotation(rotation: EulerContraint | ExactRotation): rotation is ExactRotation {
-  return (rotation as ExactRotation).value !== undefined
 }
 
 export interface SolveResult {
@@ -291,6 +286,6 @@ function copyConstraints(constraints: Constraints): Constraints {
   return result
 }
 
-function precision2(value: number): string {
-  return value.toFixed(2)
+function isExactRotation(rotation: EulerContraint | ExactRotation): rotation is ExactRotation {
+  return (rotation as ExactRotation).value !== undefined
 }

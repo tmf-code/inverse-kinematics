@@ -16,6 +16,11 @@ export interface Link {
   length: number
 }
 
+interface ExactRotation {
+  value: number
+  type: 'global' | 'local'
+}
+
 export interface SolveResult {
   /**
    * Copy of the structure of input links
@@ -39,7 +44,7 @@ export interface SolveResult {
 /**
  * Changes joint angle to minimize distance of end effector to target
  */
-export function solve(links: Link[], base: JointTransform, target: V2, options?: SolveOptions): SolveResult {
+export function solve(links: Link[], baseJoint: JointTransform, target: V2, options?: SolveOptions): SolveResult {
   // Setup defaults
   const deltaAngle = options?.deltaAngle ?? 0.00001
   const learningRate = options?.learningRate ?? 0.0001
@@ -47,7 +52,7 @@ export function solve(links: Link[], base: JointTransform, target: V2, options?:
   const acceptedError = options?.acceptedError ?? 0
 
   // Precalculate joint positions
-  const { transforms: joints, effectorPosition } = getJointTransforms(links, base)
+  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
 
   const error = V2O.euclideanDistance(target, effectorPosition)
 
@@ -84,7 +89,7 @@ export function solve(links: Link[], base: JointTransform, target: V2, options?:
     return { rotation: rotation + angleStep, length, constraint }
   })
 
-  const adjustedJoints = getJointTransforms(withAngleStep, base).transforms
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
 
   const withConstraints = withAngleStep.map(({ length, rotation, constraint }, index) => {
     if (constraint === undefined) return { length, rotation }
@@ -113,7 +118,7 @@ export function solve(links: Link[], base: JointTransform, target: V2, options?:
 
   return {
     links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, base, target),
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
     isWithinAcceptedError: undefined,
   }
 }
@@ -177,11 +182,6 @@ export function buildLink(length: number, rotation = 0, constraint?: number | Ra
 
 function copyLink({ rotation, length, constraint: constraint }: Link): Link {
   return { rotation, length, constraint: constraint === undefined ? undefined : constraint }
-}
-
-interface ExactRotation {
-  value: number
-  type: 'global' | 'local'
 }
 
 function isExactRotation(rotation: number | Range | ExactRotation): rotation is ExactRotation {

@@ -4,8 +4,10 @@ import SkinnedMeshExample from './demos/three-dimensional/skinned-mesh/SkinnedMe
 import Basic from './demos/three-dimensional/basic/Basic'
 import ThreeJS from './demos/three-dimensional/three-js/ThreeJS'
 import TwoDimension from './demos/two-dimensional/TwoDimension'
-import ConstrainedLocalRotation from './demos/two-dimensional/ConstrainedLocalRotation'
-import ConstrainedGlobalRotation from './demos/two-dimensional/ConstrainedGlobalRotation'
+import ConstrainedLocalRotation2D from './demos/two-dimensional/ConstrainedLocalRotation2D'
+import ConstrainedLocalRotation3D from './demos/three-dimensional/ConstrainedLocalRotation3D'
+import ConstrainedGlobalRotation2D from './demos/two-dimensional/ConstrainedGlobalRotation2D'
+import ConstrainedGlobalRotation3D from './demos/three-dimensional/ConstrainedGlobalRotation3D'
 
 function App() {
   return (
@@ -14,17 +16,23 @@ function App() {
       <Route path="/2d">
         <TwoDimension />
       </Route>
-      <Route path="/local">
-        <ConstrainedLocalRotation />
+      <Route path="/2d-local">
+        <ConstrainedLocalRotation2D />
       </Route>
-      <Route path="/global">
-        <ConstrainedGlobalRotation />
+      <Route path="/2d-global">
+        <ConstrainedGlobalRotation2D />
       </Route>
       <Route exact path="/">
         <TwoDimension />
       </Route>
       <Route path="/3d">
         <Basic />
+      </Route>
+      <Route path="/3d-local">
+        <ConstrainedLocalRotation3D />
+      </Route>
+      <Route path="/3d-global">
+        <ConstrainedGlobalRotation3D />
       </Route>
       <Route path="/three-js">
         <ThreeJS />
@@ -50,13 +58,12 @@ function Menu() {
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
           <Link to="/2d">2D basic</Link>
         </li>
-        <li className={pathname === '/local' ? 'highlighted' : ''}>
-          <Link to="/local">Constrained local rotation</Link>
+        <li className={pathname === '/2d-local' ? 'highlighted' : ''}>
+          <Link to="/2d-local">Constrained local rotation</Link>
         </li>
-        <li className={pathname === '/global' ? 'highlighted' : ''}>
-          <Link to="/global">Constrained global rotation</Link>
+        <li className={pathname === '/2d-global' ? 'highlighted' : ''}>
+          <Link to="/2d-global">Constrained global rotation</Link>
         </li>
-        <li></li>
       </ul>
       <h3>3d</h3>
       <ul>
@@ -68,6 +75,12 @@ function Menu() {
         </li>
         <li>
           <Link to="/skinned-mesh">Three js Skinned Mesh</Link>
+        </li>
+        <li className={pathname === '/3d-local' ? 'highlighted' : ''}>
+          <Link to="/3d-local">Constrained local rotation</Link>
+        </li>
+        <li className={pathname === '/3d-global' ? 'highlighted' : ''}>
+          <Link to="/3d-global">Constrained global rotation</Link>
         </li>
       </ul>
     </div>
