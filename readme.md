@@ -110,6 +110,95 @@ Base
   -> rotate(link_2.rotation) [joint_2] -> translate(link_2.length)
 ```
 
+## Constraints
+
+There are a number of ways in which you can limit the movement of a joint, from the default ball and socket configuration. For both 3d and 2d you can supply either:
+
+- A single value per axis, this specifies half of the rotational range either direction from the direction vector of the previous link
+- A range with values `min` and `max`.
+- An exact rotation in the local coordinate system
+- An exact rotation in the bases coordinate system
+
+### 2D
+
+```ts
+interface Link {
+  /**
+   * The rotation at the base of the link
+   */
+  rotation: number
+
+  /**
+   * undefined: No constraint
+   *
+   * Range: minimum angle, maximum angle (radians), positive is anticlockwise from previous Link's direction vector
+   *
+   * ExactRotation: Either a global, or local rotation which the Link is locked to
+   */
+  constraints?: Constraints
+  length: number
+}
+
+type Constraints = number | Range | ExactRotation
+
+interface ExactRotation {
+  value: number
+  /**
+   * 'local': Relative to previous links direction vector
+   *
+   * 'global': Relative to the baseJoints world transform
+   */
+  type: 'global' | 'local'
+}
+```
+
+### 3D
+
+```ts
+interface Link {
+  /**
+   * The rotation at the base of the link
+   */
+  rotation: Quaternion
+
+  /**
+   * undefined: No constraint
+   *
+   * {pitch, yaw, roll}: Range | Number
+   *
+   * Range: minimum angle, maximum angle (radians), positive is anticlockwise from previous Link's direction vector
+   *
+   * number: the range of rotation (radian) about the previous links direction vector. A rotation of 90 deg would be 45 deg either direction
+   *
+   * ExactRotation: Either a global, or local rotation which the Link is locked to
+   */
+  constraints?: Constraints
+  length: number
+}
+
+type Constraints = EulerConstraint | ExactRotation
+
+interface EulerConstraint {
+  /**
+   * Rotation about X
+   */
+  pitch?: number | Range
+  /**
+   * Rotation about Y
+   */
+  yaw?: number | Range
+  /**
+   * Rotation about Z
+   */
+  roll?: number | Range
+}
+
+interface ExactRotation {
+  value: Quaternion
+  type: 'global' | 'local'
+}
+```
+
 ## Tuning & Algorithm
 
 Currently this package supports gradient descent. Soon it will also support a CCD approach.
