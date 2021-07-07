@@ -149,7 +149,7 @@ describe('solve', () => {
   })
 
   it('Respects no rotation unary constraint', () => {
-    const links: Link[] = [{ rotation: 0, length: 50, constraint: 0 }]
+    const links: Link[] = [{ rotation: 0, length: 50, constraints: 0 }]
     const target: V2 = [0, 50]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -157,7 +157,7 @@ describe('solve', () => {
   })
 
   it('Respects unary constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraint: Math.PI / 2 }]
+    let links: Link[] = [{ rotation: 0, length: 1, constraints: Math.PI / 2 }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -183,7 +183,7 @@ describe('solve', () => {
   })
 
   it('Respects no rotation binary constraint', () => {
-    const links: Link[] = [{ rotation: 0, length: 50, constraint: { min: 0, max: 0 } }]
+    const links: Link[] = [{ rotation: 0, length: 50, constraints: { min: 0, max: 0 } }]
     const target: V2 = [0, 50]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -191,7 +191,7 @@ describe('solve', () => {
   })
 
   it('Respects binary constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraint: { min: -Math.PI / 4, max: Math.PI / 4 } }]
+    let links: Link[] = [{ rotation: 0, length: 1, constraints: { min: -Math.PI / 4, max: Math.PI / 4 } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -216,7 +216,7 @@ describe('solve', () => {
   })
 
   it('Respects exact local constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraint: { value: Math.PI / 4, type: 'local' } }]
+    let links: Link[] = [{ rotation: 0, length: 1, constraints: { value: Math.PI / 4, type: 'local' } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
     const result = solve(links, base, target, { learningRate: 10e-2 })
@@ -230,7 +230,7 @@ describe('solve', () => {
     let links: Link[] = [
       { rotation: 0, length: 1 },
       { rotation: 0, length: 1 },
-      { rotation: 0, length: 1, constraint: { value: Math.PI / 4, type: 'global' } },
+      { rotation: 0, length: 1, constraints: { value: Math.PI / 4, type: 'global' } },
     ]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }

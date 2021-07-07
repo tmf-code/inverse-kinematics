@@ -12,7 +12,7 @@ export interface Link {
    * The the angle which this link can rotate around it's joint
    * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
    */
-  constraint?: number | Range | ExactRotation
+  constraints?: number | Range | ExactRotation
   length: number
 }
 
@@ -69,7 +69,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
    */
-  const withAngleStep = links.map(({ rotation = 0, length, constraint }, index) => {
+  const withAngleStep = links.map(({ rotation = 0, length, constraints }, index) => {
     const linkWithAngleDelta = {
       length,
       rotation: rotation + deltaAngle,
@@ -86,33 +86,33 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
     // Get resultant angle step which minimizes error
     const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
 
-    return { rotation: rotation + angleStep, length, constraint }
+    return { rotation: rotation + angleStep, length, constraints }
   })
 
   const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
 
-  const withConstraints = withAngleStep.map(({ length, rotation, constraint }, index) => {
-    if (constraint === undefined) return { length, rotation }
+  const withConstraints = withAngleStep.map(({ length, rotation, constraints }, index) => {
+    if (constraints === undefined) return { length, rotation }
 
-    if (typeof constraint === 'number') {
-      const halfConstraint = constraint / 2
+    if (typeof constraints === 'number') {
+      const halfConstraint = constraints / 2
       const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
-      return { length, rotation: clampedRotation, constraint }
+      return { length, rotation: clampedRotation, constraints: constraints }
     }
 
-    if (isExactRotation(constraint)) {
-      if (constraint.type === 'global') {
-        const targetRotation = constraint.value
+    if (isExactRotation(constraints)) {
+      if (constraints.type === 'global') {
+        const targetRotation = constraints.value
         const currentRotation = adjustedJoints[index + 1]!.rotation
         const deltaRotation = targetRotation - currentRotation
 
-        return { length, rotation: rotation + deltaRotation, constraint }
+        return { length, rotation: rotation + deltaRotation, constraints: constraints }
       } else {
-        return { length, rotation: constraint.value, constraint }
+        return { length, rotation: constraints.value, constraints: constraints }
       }
     } else {
-      const clampedRotation = clamp(rotation, constraint.min, constraint.max)
-      return { length, rotation: clampedRotation, constraint }
+      const clampedRotation = clamp(rotation, constraints.min, constraints.max)
+      return { length, rotation: clampedRotation, constraints }
     }
   })
 
@@ -176,12 +176,12 @@ export function buildLink(length: number, rotation = 0, constraint?: number | Ra
   return {
     length,
     rotation,
-    constraint,
+    constraints: constraint,
   }
 }
 
-function copyLink({ rotation, length, constraint: constraint }: Link): Link {
-  return { rotation, length, constraint: constraint === undefined ? undefined : constraint }
+function copyLink({ rotation, length, constraints: constraint }: Link): Link {
+  return { rotation, length, constraints: constraint === undefined ? undefined : constraint }
 }
 
 function isExactRotation(rotation: number | Range | ExactRotation): rotation is ExactRotation {
