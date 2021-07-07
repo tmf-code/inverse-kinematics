@@ -8,16 +8,27 @@ export interface Link {
    * The rotation at the base of the link
    */
   rotation: number
+
   /**
-   * The the angle which this link can rotate around it's joint
-   * A value of Math.PI/2 would represent +-45 degrees from the preceding links rotation.
+   * undefined: No constraint
+   *
+   * Range: minimum angle, maximum angle (radians), positive is anticlockwise from previous Link's direction vector
+   *
+   * ExactRotation: Either a global, or local rotation which the Link is locked to
    */
-  constraints?: number | Range | ExactRotation
+  constraints?: Constraints
   length: number
 }
 
+type Constraints = number | Range | ExactRotation
+
 interface ExactRotation {
   value: number
+  /**
+   * 'local': Relative to previous links direction vector
+   *
+   * 'global': Relative to the baseJoints world transform
+   */
   type: 'global' | 'local'
 }
 
