@@ -10,7 +10,6 @@
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
-    "removeComments": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
