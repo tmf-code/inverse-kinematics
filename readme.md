@@ -20,7 +20,11 @@ import { V2, Solve2D } from 'inverse-kinematics'
 
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
-let links: Solve2D.Link[] = [{ length: 50 }, { length: 50 }, { length: 50 }]
+let links: Solve2D.Link[] = [
+  { length: 50, rotation: 0 },
+  { length: 50, rotation: 0 },
+  { length: 50, rotation: 0 },
+]
 
 // Define the base of the links
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
@@ -50,7 +54,11 @@ import { V3, Solve3D, QuaternionO } from 'inverse-kinematics'
 
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
-let links: Solve3D.Link[] = [{ length: 50 }, { length: 50 }, { length: 50 }]
+let links: Solve3D.Link[] = [
+  { length: 50, rotation: QuaternionO.zeroRotation() },
+  { length: 50, rotation: QuaternionO.zeroRotation() },
+  { length: 50, rotation: QuaternionO.zeroRotation() },
+]
 
 // Define the base of the links
 const base: Solve3D.JointTransform = {
