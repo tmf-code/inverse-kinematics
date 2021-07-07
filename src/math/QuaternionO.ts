@@ -45,6 +45,15 @@ export const conjugate = (quaternion: Quaternion): Quaternion => {
   return [-quaternion[0], -quaternion[1], -quaternion[2], quaternion[3]]
 }
 
+export const inverse = (quaternion: Quaternion): Quaternion => {
+  const conj = conjugate(quaternion)
+  const mag = magnitude(quaternion)
+
+  return [conj[0] / mag, conj[1] / mag, conj[2] / mag, conj[3] / mag]
+}
+
+export const magnitude = (quaternion: Quaternion): number => Math.hypot(...quaternion)
+
 export const zeroRotation = (): Quaternion => [0, 0, 0, 1]
 
 export const normalize = (quaternion: Quaternion): Quaternion => {

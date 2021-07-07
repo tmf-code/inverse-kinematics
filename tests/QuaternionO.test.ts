@@ -100,6 +100,29 @@ describe('Quaternion Operations', () => {
 
     expect(() => QuaternionO.clamp(input, lowerBound, upperBound)).toThrow()
   })
+
+  it('Calculates magnitude', () => {
+    {
+      const input: Quaternion = [0, 0, 0, 1]
+      const magnitude = QuaternionO.magnitude(input)
+
+      expect(magnitude).toBe(1)
+    }
+
+    {
+      const input: Quaternion = [0, 0, 0, 0]
+      const magnitude = QuaternionO.magnitude(input)
+
+      expect(magnitude).toBe(0)
+    }
+  })
+
+  it('Calculates inverse', () => {
+    const input: Quaternion = QuaternionO.fromEulerAngles([Math.PI, 0, 0])
+    const expected: Quaternion = QuaternionO.fromEulerAngles([-Math.PI, 0, 0])
+
+    expect(QuaternionO.inverse(input)).toBeCloseToQuaternion(expected)
+  })
 })
 
 declare global {
