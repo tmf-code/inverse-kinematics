@@ -123,6 +123,55 @@ describe('Quaternion Operations', () => {
 
     expect(QuaternionO.inverse(input)).toBeCloseToQuaternion(expected)
   })
+
+  it('Creates from unit direction vectors', () => {
+    {
+      const input: V3 = [0, 1, 0]
+      const expected: Quaternion = [0, 0, oneOnRootTwo, oneOnRootTwo]
+
+      expect(QuaternionO.fromUnitDirectionVector(input)).toBeCloseToQuaternion(expected)
+    }
+    {
+      const input: V3 = [0, -1, 0]
+      const expected: Quaternion = [0, 0, -oneOnRootTwo, oneOnRootTwo]
+
+      expect(QuaternionO.fromUnitDirectionVector(input)).toBeCloseToQuaternion(expected)
+    }
+    {
+      const input: V3 = [1, 0, 0]
+      const expected: Quaternion = [0, 0, 0, 1]
+
+      expect(QuaternionO.fromUnitDirectionVector(input)).toBeCloseToQuaternion(expected)
+    }
+  })
+
+  it('Creates from axis angle', () => {
+    const axis: V3 = [0, 1, 0]
+    const angle = Math.PI / 2
+
+    const expected: Quaternion = [0, oneOnRootTwo, 0, oneOnRootTwo]
+
+    expect(QuaternionO.fromAxisAngle(axis, angle)).toBeCloseToQuaternion(expected)
+  })
+
+  it('Creates from rotation from two vectors', () => {
+    {
+      const a: V3 = [0, 0, -1]
+      const b: V3 = [-1, 0, 0]
+
+      const expected: Quaternion = [0, oneOnRootTwo, 0, oneOnRootTwo]
+
+      expect(QuaternionO.rotationFromTo(a, b)).toBeCloseToQuaternion(expected)
+    }
+    {
+      const a: V3 = [1, 0, 0]
+      const b: V3 = [0, 4, 0]
+
+      const expected: Quaternion = [0, 0, oneOnRootTwo, oneOnRootTwo]
+
+      expect(QuaternionO.rotationFromTo(a, b)).toBeCloseToQuaternion(expected)
+    }
+  })
 })
 
 declare global {
@@ -157,14 +206,20 @@ expect.extend({
 
     if (pass) {
       return {
-        message: () => `expected ${received} not to be close to ${expected}`,
+        message: () =>
+          `expected ${toPrecision(received, precision)} not to be close to ${toPrecision(expected, precision)}`,
         pass: true,
       }
     } else {
       return {
-        message: () => `expected ${received} to be close to ${expected}`,
+        message: () =>
+          `expected ${toPrecision(received, precision)} to be close to ${toPrecision(expected, precision)}`,
         pass: false,
       }
     }
   },
 })
+
+function toPrecision(quaternion: Quaternion, precision: number): string[] {
+  return quaternion.map((component) => component.toPrecision(precision))
+}

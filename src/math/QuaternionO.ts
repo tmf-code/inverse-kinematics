@@ -83,6 +83,44 @@ export const clamp = (quaternion: Quaternion, lowerBound: V3, upperBound: V3): Q
   return normalize([x, y, z, 1])
 }
 
+export const fromUnitDirectionVector = (vector: V3): Quaternion => {
+  return rotationFromTo([1, 0, 0], vector)
+}
+
+export const rotationFromTo = (a: V3, b: V3): Quaternion => {
+  const aNormalised = V3O.normalise(a)
+  const bNormalised = V3O.normalise(b)
+  const dot = V3O.dotProduct(aNormalised, bNormalised)
+
+  const isParallel = dot >= 1
+  if (isParallel) {
+    // a, b are parallel
+    return zeroRotation()
+  }
+
+  const isAntiParallel = dot < -1 + Number.EPSILON
+  if (isAntiParallel) {
+    let axis = V3O.crossProduct([1, 0, 0], aNormalised)
+    const aPointsForward = V3O.sqrEuclideanLength(axis) === 0
+
+    if (aPointsForward) {
+      axis = V3O.crossProduct([0, 1, 0], aNormalised)
+    }
+
+    axis = V3O.normalise(axis)
+
+    return fromAxisAngle(axis, Math.PI)
+  }
+
+  const q: Quaternion = [...V3O.crossProduct(aNormalised, bNormalised), 1 + dot]
+  return normalize(q)
+}
+
+export const fromAxisAngle = (axis: V3, angle: number): Quaternion => {
+  const halfAngle = angle / 2
+  return [...V3O.scale(axis, Math.sin(halfAngle)), Math.cos(halfAngle)]
+}
+
 export const fromObject = (object: { w: number; x: number; y: number; z: number }): Quaternion => [
   object.x,
   object.y,
