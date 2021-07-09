@@ -78,7 +78,7 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
   Array.from({ length: linkCount }).map((_, index) => {
     if (index === linkCount - 1) {
       return {
-        length: linkLength,
+        position: [linkLength, 0, 0],
         constraints: {
           value: QuaternionO.fromEulerAngles([0, 0, (endEffectorRotation * Math.PI) / 180]),
           type: 'local',
@@ -87,7 +87,7 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
       }
     }
     return {
-      length: linkLength,
+      position: [linkLength, 0, 0],
       rotation: QuaternionO.zeroRotation(),
     }
   })

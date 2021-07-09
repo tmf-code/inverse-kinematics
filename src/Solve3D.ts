@@ -21,7 +21,7 @@ export interface Link {
    * ExactRotation: Either a global, or local rotation which the Link is locked to
    */
   constraints?: Constraints
-  length: number
+  position: V3
 }
 
 type Constraints = EulerConstraint | ExactRotation
@@ -101,14 +101,14 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
    * 2. Apply angle steps
    */
   const withAngleStep: Link[] = links.map(
-    ({ length, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
+    ({ position, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
       // For each, calculate partial derivative, sum to give full numerical derivative
       const angleStep: V3 = V3O.fromArray(
         [0, 0, 0].map((_, v3Index) => {
           const eulerAngle = [0, 0, 0]
           eulerAngle[v3Index] = deltaAngle
           const linkWithAngleDelta = {
-            length: length,
+            position,
             rotation: QuaternionO.multiply(rotation, QuaternionO.fromEulerAngles(V3O.fromArray(eulerAngle))),
           }
 
@@ -130,14 +130,14 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
 
       const steppedRotation = QuaternionO.multiply(rotation, QuaternionO.fromEulerAngles(angleStep))
 
-      return { length, rotation: steppedRotation, constraints }
+      return { position, rotation: steppedRotation, constraints }
     },
   )
 
   const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
 
-  const withConstraints = withAngleStep.map(({ length, rotation, constraints }, index) => {
-    if (constraints === undefined) return { length, rotation }
+  const withConstraints = withAngleStep.map(({ position, rotation, constraints }, index) => {
+    if (constraints === undefined) return { position: position, rotation }
 
     if (isExactRotation(constraints)) {
       if (constraints.type === 'global') {
@@ -148,9 +148,9 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
           targetRotation,
         )
 
-        return { length, rotation: adjustedRotation, constraints }
+        return { position, rotation: adjustedRotation, constraints }
       } else {
-        return { length, rotation: constraints.value, constraints }
+        return { position, rotation: constraints.value, constraints }
       }
     }
 
@@ -198,7 +198,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
     const lowerBound: V3 = [pitchMin, yawMin, rollMin]
     const upperBound: V3 = [pitchMax, yawMax, rollMax]
     const clampedRotation = QuaternionO.clamp(rotation, lowerBound, upperBound)
-    return { length, rotation: clampedRotation, constraints: copyConstraints(constraints) }
+    return { position: position, rotation: clampedRotation, constraints: copyConstraints(constraints) }
   })
 
   return {
@@ -248,7 +248,7 @@ export function getJointTransforms(
       parentTransform.rotation,
       currentLink.rotation ?? QuaternionO.zeroRotation(),
     )
-    const relativePosition = V3O.fromPolar(currentLink.length, absoluteRotation)
+    const relativePosition = V3O.rotate(currentLink.position, absoluteRotation)
     const absolutePosition = V3O.add(relativePosition, parentTransform.position)
     transforms.push({ position: absolutePosition, rotation: absoluteRotation })
   }
@@ -258,16 +258,20 @@ export function getJointTransforms(
   return { transforms, effectorPosition }
 }
 
-export function buildLink(length: number, rotation = QuaternionO.zeroRotation(), constraints?: Constraints): Link {
+export function buildLink(position: V3, rotation = QuaternionO.zeroRotation(), constraints?: Constraints): Link {
   return {
-    length,
+    position,
     rotation,
     constraints,
   }
 }
 
-function copyLink({ rotation, length, constraints }: Link): Link {
-  return { rotation, length, constraints: constraints === undefined ? undefined : copyConstraints(constraints) }
+function copyLink({ rotation, position, constraints }: Link): Link {
+  return {
+    rotation,
+    position: [...position],
+    constraints: constraints === undefined ? undefined : copyConstraints(constraints),
+  }
 }
 
 function copyConstraints(constraints: Constraints): Constraints {

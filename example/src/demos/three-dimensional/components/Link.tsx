@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { Quaternion } from 'inverse-kinematics'
+import { Quaternion, V3 } from 'inverse-kinematics'
 import React, { useMemo, useRef } from 'react'
 import {
   BoxBufferGeometry,
@@ -14,7 +14,7 @@ import {
 } from 'three'
 
 export interface LinkProps {
-  link: { rotation: Quaternion; length: number }
+  link: { rotation: Quaternion; position: V3 }
   child?: LinkProps
 }
 
@@ -26,16 +26,16 @@ export const Link = ({ link, child }: LinkProps) => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
     rotationRef.current.quaternion.set(...link.rotation)
-    translationRef.current.position.set(link.length, 0, 0)
+    translationRef.current.position.set(...link.position)
   })
 
   const line: Line = useMemo(() => {
-    const points = [new Vector3(), new Vector3(link.length, 0, 0)]
+    const points = [new Vector3(), new Vector3(...link.position)]
     const geometry = new BufferGeometry().setFromPoints(points)
     const material = new LineBasicMaterial({ color: new Color('#8B008B') })
 
     return new Line(geometry, material)
-  }, [link.length])
+  }, [link])
 
   return (
     <group ref={rotationRef}>

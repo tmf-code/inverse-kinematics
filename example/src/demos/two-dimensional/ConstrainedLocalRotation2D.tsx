@@ -82,13 +82,13 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
   Array.from({ length: linkCount }).map((_, index) => {
     if (index === linkCount - 1) {
       return {
-        length: linkLength,
+        position: [linkLength, 0],
         constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'local' },
         rotation: 0,
       }
     }
     return {
-      length: linkLength,
+      position: [linkLength, 0],
       rotation: 0,
     }
   })

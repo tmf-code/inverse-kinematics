@@ -11,9 +11,10 @@ import {
   MeshNormalMaterial,
   Vector3,
 } from 'three'
+import { V2 } from 'inverse-kinematics'
 
 export interface LinkProps {
-  link: { rotation: number; length: number }
+  link: { rotation: number; position: V2 }
   child?: LinkProps
 }
 
@@ -25,16 +26,16 @@ export const Link = ({ link, child }: LinkProps) => {
     if (!rotationRef.current) return
     if (!translationRef.current) return
     rotationRef.current.rotation.set(0, 0, link.rotation)
-    translationRef.current.position.set(link.length, 0, 0)
+    translationRef.current.position.set(...link.position, 0)
   })
 
   const line: Line = useMemo(() => {
-    const points = [new Vector3(), new Vector3(link.length, 0, 0)]
+    const points = [new Vector3(), new Vector3(...link.position, 0)]
     const geometry = new BufferGeometry().setFromPoints(points)
     const material = new LineBasicMaterial({ color: new Color('#8B008B') })
 
     return new Line(geometry, material)
-  }, [link.length])
+  }, [link])
 
   return (
     <group ref={rotationRef}>

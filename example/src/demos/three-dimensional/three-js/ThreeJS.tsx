@@ -39,7 +39,7 @@ function ThreeJS() {
 
     const links: Solve3D.Link[] = hierarchy.map((object) => ({
       rotation: QuaternionO.fromObject(object.quaternion),
-      length: V3O.euclideanLength(V3O.fromVector3(object.position)),
+      position: V3O.fromVector3(object.position),
     }))
 
     setLinks(links)
@@ -52,7 +52,7 @@ function ThreeJS() {
 
   useAnimationFrame(60, () => {
     if (!flattennedHierarchy.current) return
-    const knownRangeOfMovement = links.reduce((acc, cur) => acc + cur.length, 0)
+    const knownRangeOfMovement = links.reduce((acc, cur) => acc + V3O.euclideanLength(cur.position), 0)
     function learningRate(errorDistance: number): number {
       const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
       const cutoff = 0.1

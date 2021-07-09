@@ -19,7 +19,7 @@ describe('getJointTransforms', () => {
   })
 
   it('Returns end effector position', () => {
-    const links: Link[] = [{ rotation: 0, length: 50 }]
+    const links: Link[] = [{ rotation: 0, position: [50, 0] }]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -27,7 +27,7 @@ describe('getJointTransforms', () => {
   })
 
   it('Respects base rotation', () => {
-    const links: Link[] = [buildLink(50)]
+    const links: Link[] = [buildLink([50, 0])]
     const pivotTransform = { position: [0, 0] as V2, rotation: Math.PI / 2 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -36,10 +36,10 @@ describe('getJointTransforms', () => {
 
   it('Returns end effector position after long chain', () => {
     const links: Link[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
     ]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
@@ -48,7 +48,7 @@ describe('getJointTransforms', () => {
   })
 
   it('Returns end effector position after bend', () => {
-    const links: Link[] = [{ rotation: Math.PI / 2, length: 50 }]
+    const links: Link[] = [{ rotation: Math.PI / 2, position: [50, 0] }]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -58,10 +58,10 @@ describe('getJointTransforms', () => {
 
   it('Returns end effector position chain with bends', () => {
     const links: Link[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: Math.PI / 2, length: 50 },
-      { rotation: -Math.PI / 2, length: 50 },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: Math.PI / 2, position: [50, 0] },
+      { rotation: -Math.PI / 2, position: [50, 0] },
     ]
     const pivotTransform = { position: [0, 0] as V2, rotation: 0 }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
@@ -81,8 +81,8 @@ describe('getJointTransforms', () => {
 
   it('Returns absolute transforms for chain', () => {
     const links: Link[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
     ]
     const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
     const transforms = getJointTransforms(links, pivotTransform).transforms
@@ -97,10 +97,10 @@ describe('getJointTransforms', () => {
 
   it('Returns absolute transforms for chain with bends', () => {
     const links: Link[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: Math.PI / 2, length: 50 },
-      { rotation: -Math.PI / 2, length: 50 },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: Math.PI / 2, position: [50, 0] },
+      { rotation: -Math.PI / 2, position: [50, 0] },
     ]
     const pivotTransform = { position: [50, 0] as V2, rotation: 0 }
     const transforms = getJointTransforms(links, pivotTransform).transforms
@@ -126,7 +126,7 @@ describe('solve', () => {
   })
 
   it('Reduces distance to target each time it is called', () => {
-    const links: Link[] = [{ rotation: 0, length: 50 }]
+    const links: Link[] = [{ rotation: 0, position: [50, 0] }]
     const target: V2 = [0, 50]
 
     const base: JointTransform = { position: [0, 0], rotation: 0 }
@@ -136,10 +136,10 @@ describe('solve', () => {
 
   it('Reduces distance to target each time it is called with complex chain', () => {
     const links: Link[] = [
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
-      { rotation: 0, length: 50 },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
     ]
     const target: V2 = [0, 50]
 
@@ -149,7 +149,7 @@ describe('solve', () => {
   })
 
   it('Respects no rotation unary constraint', () => {
-    const links: Link[] = [{ rotation: 0, length: 50, constraints: 0 }]
+    const links: Link[] = [{ rotation: 0, position: [50, 0], constraints: 0 }]
     const target: V2 = [0, 50]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -157,7 +157,7 @@ describe('solve', () => {
   })
 
   it('Respects unary constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraints: Math.PI / 2 }]
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: Math.PI / 2 }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -183,7 +183,7 @@ describe('solve', () => {
   })
 
   it('Respects no rotation binary constraint', () => {
-    const links: Link[] = [{ rotation: 0, length: 50, constraints: { min: 0, max: 0 } }]
+    const links: Link[] = [{ rotation: 0, position: [50, 0], constraints: { min: 0, max: 0 } }]
     const target: V2 = [0, 50]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -191,7 +191,7 @@ describe('solve', () => {
   })
 
   it('Respects binary constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraints: { min: -Math.PI / 4, max: Math.PI / 4 } }]
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { min: -Math.PI / 4, max: Math.PI / 4 } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
@@ -216,7 +216,7 @@ describe('solve', () => {
   })
 
   it('Respects exact local constraint', () => {
-    let links: Link[] = [{ rotation: 0, length: 1, constraints: { value: Math.PI / 4, type: 'local' } }]
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'local' } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
     const result = solve(links, base, target, { learningRate: 10e-2 })
@@ -228,9 +228,9 @@ describe('solve', () => {
 
   it('Respects exact global constraint', () => {
     let links: Link[] = [
-      { rotation: 0, length: 1 },
-      { rotation: 0, length: 1 },
-      { rotation: 0, length: 1, constraints: { value: Math.PI / 4, type: 'global' } },
+      { rotation: 0, position: [1, 0] },
+      { rotation: 0, position: [1, 0] },
+      { rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'global' } },
     ]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }

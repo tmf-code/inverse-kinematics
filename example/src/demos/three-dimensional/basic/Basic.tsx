@@ -79,7 +79,7 @@ export default function Basic() {
 
 const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve3D.Link[] =>
   Array.from({ length: linkCount }).map(() => ({
-    length: linkLength,
+    position: [linkLength, 0, 0],
     rotation: QuaternionO.zeroRotation(),
     constraints: {
       pitch: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },

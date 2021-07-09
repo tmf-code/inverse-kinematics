@@ -81,7 +81,7 @@ export default function TwoDimension() {
 
 const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve2D.Link[] =>
   Array.from({ length: linkCount }).map(() => ({
-    length: linkLength,
+    position: [linkLength, 0],
     constraint: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
     rotation: 0,
   }))

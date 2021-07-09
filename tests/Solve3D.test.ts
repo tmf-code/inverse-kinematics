@@ -11,7 +11,7 @@ describe('forwardPass', () => {
   })
 
   it('Returns end effector position', () => {
-    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), length: 50 }]
+    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] }]
     const pivotTransform = { position: [0, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -19,7 +19,7 @@ describe('forwardPass', () => {
   })
 
   it('Respects base rotation', () => {
-    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), length: 50 }]
+    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] }]
     const pivotTransform = { position: [0, 0, 0] as V3, rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]) }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -28,10 +28,10 @@ describe('forwardPass', () => {
 
   it('Returns end effector position after long chain', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
     ]
     const pivotTransform = { position: [0, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
@@ -40,7 +40,7 @@ describe('forwardPass', () => {
   })
 
   it('Returns end effector position after bend', () => {
-    const links: Link[] = [{ rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), length: 50 }]
+    const links: Link[] = [{ rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), position: [50, 0, 0] }]
     const pivotTransform = { position: [0, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
 
@@ -50,10 +50,10 @@ describe('forwardPass', () => {
 
   it('Returns end effector position chain with bends', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), length: 50 },
-      { rotation: QuaternionO.fromEulerAngles([0, 0, -Math.PI / 2]), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), position: [50, 0, 0] },
+      { rotation: QuaternionO.fromEulerAngles([0, 0, -Math.PI / 2]), position: [50, 0, 0] },
     ]
     const pivotTransform = { position: [0, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const endEffectorPosition = getJointTransforms(links, pivotTransform).effectorPosition
@@ -73,8 +73,8 @@ describe('forwardPass', () => {
 
   it('Returns absolute transforms for chain', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
     ]
     const pivotTransform = { position: [50, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const transforms = getJointTransforms(links, pivotTransform).transforms
@@ -89,10 +89,10 @@ describe('forwardPass', () => {
 
   it('Returns absolute transforms for chain with bends', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), length: 50 },
-      { rotation: QuaternionO.fromEulerAngles([0, 0, -Math.PI / 2]), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.fromEulerAngles([0, 0, Math.PI / 2]), position: [50, 0, 0] },
+      { rotation: QuaternionO.fromEulerAngles([0, 0, -Math.PI / 2]), position: [50, 0, 0] },
     ]
     const pivotTransform = { position: [50, 0, 0] as V3, rotation: QuaternionO.zeroRotation() }
     const transforms = getJointTransforms(links, pivotTransform).transforms
@@ -111,7 +111,7 @@ describe('forwardPass', () => {
     let links: Link[] = [
       {
         rotation: QuaternionO.zeroRotation(),
-        length: 1,
+        position: [1, 0, 0],
         constraints: { value: QuaternionO.fromEulerAngles([Math.PI / 4, 0, 0]), type: 'local' },
       },
     ]
@@ -128,11 +128,11 @@ describe('forwardPass', () => {
 
   it('Respects exact global constraint', () => {
     let links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 1 },
-      { rotation: QuaternionO.zeroRotation(), length: 1 },
+      { rotation: QuaternionO.zeroRotation(), position: [1, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [1, 0, 0] },
       {
         rotation: QuaternionO.zeroRotation(),
-        length: 1,
+        position: [1, 0, 0],
         constraints: { value: QuaternionO.fromEulerAngles([Math.PI / 2, 0, 0]), type: 'global' },
       },
     ]
@@ -159,7 +159,7 @@ describe('solve', () => {
   })
 
   it('Reduces distance to target each time it is called', () => {
-    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), length: 50 }]
+    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] }]
     const target: V3 = [0, 50, 0]
 
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
@@ -169,10 +169,10 @@ describe('solve', () => {
 
   it('Reduces distance to target each time it is called with complex chain', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
     ]
     const target: V3 = [0, 50, 0]
 
@@ -183,10 +183,10 @@ describe('solve', () => {
 
   it('Should not improve if output of previous step is not used as input to following step', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
-      { rotation: QuaternionO.zeroRotation(), length: 50 },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
     ]
     const target: V3 = [0, 50, 0]
 
@@ -206,7 +206,7 @@ describe('solve', () => {
 
   it('Respects no rotation unary constraint', () => {
     const links: Link[] = [
-      { rotation: QuaternionO.zeroRotation(), length: 50, constraints: { yaw: 0, roll: 0, pitch: 0 } },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0], constraints: { yaw: 0, roll: 0, pitch: 0 } },
     ]
     const target: V3 = [0, 50, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
@@ -218,7 +218,7 @@ describe('solve', () => {
     const links: Link[] = [
       {
         rotation: QuaternionO.zeroRotation(),
-        length: 50,
+        position: [50, 0, 0],
         constraints: { yaw: { min: 0, max: 0 }, roll: { min: 0, max: 0 }, pitch: { min: 0, max: 0 } },
       },
     ]
@@ -232,7 +232,7 @@ describe('solve', () => {
     let links: Link[] = [
       {
         rotation: QuaternionO.zeroRotation(),
-        length: 1,
+        position: [1, 0, 0],
         constraints: {
           yaw: 0,
           // Roll about z, causes x points vector to rotate to point up at y
