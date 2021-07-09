@@ -39,20 +39,20 @@ function SkinnedMeshExample() {
       const nextBone = array[index + 1]?.getWorldPosition(new Vector3())
 
       if (nextBone) {
-        const euclideanDistance = V3O.euclideanDistance(
+        const distance = V3O.subtract(
           V3O.fromVector3(nextBone),
           V3O.fromVector3(object.getWorldPosition(new Vector3())),
         )
 
         return {
           rotation: QuaternionO.fromObject(object.quaternion),
-          length: euclideanDistance,
+          position: distance,
         }
       }
 
       return {
         rotation: QuaternionO.fromObject(object.quaternion),
-        length: 0.0,
+        position: [0, 0, 0],
       }
     })
 
@@ -63,7 +63,7 @@ function SkinnedMeshExample() {
   const meshRef = useRef<SkinnedMesh>()
 
   useAnimationFrame(60, () => {
-    const knownRangeOfMovement = links.reduce((acc, cur) => acc + cur.length, 0)
+    const knownRangeOfMovement = links.reduce((acc, cur) => acc + V3O.euclideanLength(cur.position), 0)
     function learningRate(errorDistance: number): number {
       const relativeDistanceToTarget = MathUtils.clamp(errorDistance / knownRangeOfMovement, 0, 1)
       const cutoff = 0.1
