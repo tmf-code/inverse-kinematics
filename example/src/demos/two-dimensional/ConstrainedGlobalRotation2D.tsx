@@ -82,10 +82,10 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
   Array.from({ length: linkCount }).map((_, index) => {
     if (index === linkCount - 1) {
       return {
-        length: linkLength,
+        position: [linkLength, 0],
         constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
         rotation: 0,
       }
     }
-    return Solve2D.buildLink(linkLength)
+    return Solve2D.buildLink([linkLength, 0])
   })
