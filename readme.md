@@ -21,9 +21,9 @@ import { V2, Solve2D } from 'inverse-kinematics'
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
 let links: Solve2D.Link[] = [
-  { length: 50, rotation: 0 },
-  { length: 50, rotation: 0 },
-  { length: 50, rotation: 0 },
+  { position: [50, 0], rotation: 0 },
+  { position: [50, 0], rotation: 0 },
+  { position: [50, 0], rotation: 0 },
 ]
 
 // Define the base of the links
@@ -55,9 +55,9 @@ import { V3, Solve3D, QuaternionO } from 'inverse-kinematics'
 // Create a list of 'links'
 // Three links, of 50 units long, all pointing in the same direction
 let links: Solve3D.Link[] = [
-  { length: 50, rotation: QuaternionO.zeroRotation() },
-  { length: 50, rotation: QuaternionO.zeroRotation() },
-  { length: 50, rotation: QuaternionO.zeroRotation() },
+  { position: [50, 0, 0], rotation: QuaternionO.zeroRotation() },
+  { position: [50, 0, 0], rotation: QuaternionO.zeroRotation() },
+  { position: [50, 0, 0], rotation: QuaternionO.zeroRotation() },
 ]
 
 // Define the base of the links
@@ -106,8 +106,8 @@ You could visualize a link chain like so:
 
 ```
 Base
-  -> rotate(link_1.rotation) [joint_1] -> translate(link_1.length)
-  -> rotate(link_2.rotation) [joint_2] -> translate(link_2.length)
+  -> rotate(link_1.rotation) [joint_1] -> translate(link_1.position)
+  -> rotate(link_2.rotation) [joint_2] -> translate(link_2.position)
 ```
 
 ## Constraints
@@ -136,7 +136,7 @@ interface Link {
    * ExactRotation: Either a global, or local rotation which the Link is locked to
    */
   constraints?: Constraints
-  length: number
+  position: V2
 }
 
 type Constraints = number | Range | ExactRotation
@@ -173,7 +173,7 @@ interface Link {
    * ExactRotation: Either a global, or local rotation which the Link is locked to
    */
   constraints?: Constraints
-  length: number
+  position: V3
 }
 
 type Constraints = EulerConstraint | ExactRotation
