@@ -135,3 +135,10 @@ export const rotate = (vector: V3, rotation: Quaternion): V3 => {
 }
 
 export const fromPolar = (radius: number, angle: Quaternion): V3 => rotate([radius, 0, 0], angle)
+
+export const toPolar = (vector: V3): [radius: number, angle: Quaternion] => {
+  const radius = euclideanLength(vector)
+  const angle = QuaternionO.fromUnitDirectionVector(normalise(vector))
+
+  return [radius, angle]
+}

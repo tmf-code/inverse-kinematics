@@ -10,6 +10,26 @@ describe('Vector3 Operations', () => {
     expect(V3O.fromPolar(radius, angle)).toBeCloseToV3([0, 0, -1])
   })
 
+  it('Can create polar from vector coordinates', () => {
+    const input: V3 = [0, 10, 0]
+    const expected = [10, [0, 0, oneOnRootTwo, oneOnRootTwo] as Quaternion] as const
+
+    expect(V3O.toPolar(input)).toStrictEqual(expected)
+  })
+
+  it('Can chain toPolar and fromPolar without error', () => {
+    const input: V3 = [1, 1, 1]
+
+    expect(V3O.fromPolar(...V3O.toPolar(input))).toBeCloseToV3(input)
+  })
+
+  it('Can chain fromPolar and toPolar without error', () => {
+    const input = [1, [0, 0, 1, 0] as Quaternion] as const
+    const expected: V3 = [-1, 0, 0]
+
+    expect(V3O.fromPolar(...V3O.toPolar(V3O.fromPolar(...input)))).toBeCloseToV3(expected)
+  })
+
   it('Can create vector from polar coordinates, in each axis', () => {
     // X
     {
