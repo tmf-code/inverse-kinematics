@@ -1,6 +1,6 @@
 {
   "name": "inverse-kinematics",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Jae Perris & Alexandra Barancova",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
@@ -30,14 +30,14 @@
   "license": "MIT",
   "homepage": "https://github.com/tmf-code/inverse-kinematics#readme",
   "devDependencies": {
-    "@types/jest": "^26.0.23",
-    "@typescript-eslint/eslint-plugin": "^4.28.0",
-    "@typescript-eslint/parser": "^4.28.0",
-    "eslint": "^7.29.0",
+    "@types/jest": "^26.0.24",
+    "@typescript-eslint/eslint-plugin": "^4.28.2",
+    "@typescript-eslint/parser": "^4.28.2",
+    "eslint": "^7.30.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
-    "prettier": "^2.3.1",
+    "prettier": "^2.3.2",
     "ts-jest": "^27.0.3",
-    "typescript": "^4.3.4"
+    "typescript": "^4.3.5"
   }
 }

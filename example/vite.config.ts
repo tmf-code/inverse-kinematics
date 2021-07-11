@@ -4,4 +4,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: 'https://tmf-code.github.io/inverse-kinematics/',
   plugins: [reactRefresh()],
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
 })
