@@ -8,6 +8,7 @@ import ConstrainedLocalRotation2D from './demos/two-dimensional/ConstrainedLocal
 import ConstrainedLocalRotation3D from './demos/three-dimensional/ConstrainedLocalRotation3D'
 import ConstrainedGlobalRotation2D from './demos/two-dimensional/ConstrainedGlobalRotation2D'
 import ConstrainedGlobalRotation3D from './demos/three-dimensional/ConstrainedGlobalRotation3D'
+import WebXRExample from './demos/three-dimensional/web-xr/WebXR'
 
 function App() {
   return (
@@ -40,6 +41,11 @@ function App() {
       <Route path="/skinned-mesh">
         <Suspense fallback={null}>
           <SkinnedMeshExample />
+        </Suspense>
+      </Route>
+      <Route path="/web-xr">
+        <Suspense fallback={null}>
+          <WebXRExample />
         </Suspense>
       </Route>
     </HashRouter>
@@ -75,6 +81,9 @@ function Menu() {
         </li>
         <li>
           <Link to="/skinned-mesh">Three js Skinned Mesh</Link>
+        </li>
+        <li className={pathname === '/web-xr' ? 'highlighted' : ''}>
+          <Link to="/web-xr">Web XR</Link>
         </li>
         <li className={pathname === '/3d-local' ? 'highlighted' : ''}>
           <Link to="/3d-local">Constrained local rotation</Link>

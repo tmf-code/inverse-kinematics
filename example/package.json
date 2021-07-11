@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-three/drei": "^7.0.6",
     "@react-three/fiber": "7.0.4",
+    "@react-three/xr": "^3.1.2",
     "@types/react-router-dom": "^5.1.8",
     "gh-pages": "^3.2.3",
     "inverse-kinematics": "file:..",
