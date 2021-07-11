@@ -1,4 +1,4 @@
-import { GizmoHelper, GizmoViewport, OrbitControls, Sphere, useGLTF } from '@react-three/drei'
+import { GizmoHelper, GizmoViewport, OrbitControls, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3O } from 'inverse-kinematics'
 import React, { Suspense, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { Base } from '../components/Base'
 import { JointTransforms } from '../components/JointTransforms'
 import { Target } from '../components/Target'
 import modelSrc from './arm2.gltf?url'
-import { Background } from './components/Background'
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -103,7 +102,6 @@ function Scene() {
   return (
     <>
       <OrbitControls ref={controlsRef} />
-      <Background />
       <Target position={target} setPosition={setTarget} />
       <Suspense fallback={null}>
         <group dispose={null} scale={[1, 1, 1]}>
