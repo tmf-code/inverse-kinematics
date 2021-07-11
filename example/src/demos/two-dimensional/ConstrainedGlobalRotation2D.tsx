@@ -83,7 +83,7 @@ const makeLinks = (linkCount: number, linkLength: number, endEffectorRotation: n
     if (index === linkCount - 1) {
       return {
         position: [linkLength, 0],
-        constraint: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
+        constraints: { value: (endEffectorRotation * Math.PI) / 180, type: 'global' },
         rotation: 0,
       }
     }
