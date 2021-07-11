@@ -2,21 +2,13 @@ import { GizmoHelper, GizmoViewport, OrbitControls, useGLTF } from '@react-three
 import { Canvas, useFrame } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3O } from 'inverse-kinematics'
 import React, { Suspense, useRef, useState } from 'react'
-import * as THREE from 'three'
-import { Bone, MeshNormalMaterial, Vector3 } from 'three'
+import { Bone, Group, MeshNormalMaterial, Vector3 } from 'three'
 import { OrbitControls as ThreeOrbitControls } from 'three-stdlib'
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Base } from '../components/Base'
 import { JointTransforms } from '../components/JointTransforms'
 import { Target } from '../components/Target'
 import modelSrc from './arm2.gltf?url'
-
-type GLTFResult = GLTF & {
-  nodes: {
-    Cylinder: THREE.SkinnedMesh
-    shoulder: THREE.Bone
-  }
-}
 
 function SkinnedMeshExample() {
   return (
@@ -29,19 +21,24 @@ function SkinnedMeshExample() {
       }}
       linear
     >
-      <Scene />
+      <Suspense fallback={null}>
+        <Scene />
+      </Suspense>
     </Canvas>
   )
 }
 
 function Scene() {
   const { nodes } = useGLTF(modelSrc) as GLTFResult
-  const modelRef = useRef<THREE.Group>()
+  const modelRef = useRef<Group>()
 
   const [target, setTarget] = useState(V3O.zero())
+  const [base] = useState<Solve3D.JointTransform>({ position: V3O.zero(), rotation: QuaternionO.zeroRotation() })
+  const [debugLinks, setLinks] = useState<Solve3D.Link[]>([])
+
+  const controlsRef = useRef<ThreeOrbitControls>(null)
 
   useFrame(() => {
-    // Get base position
     const firstBone = modelRef.current?.children.find((child) => (child as Bone).isBone) as Bone | undefined
     if (!firstBone) return
 
@@ -94,31 +91,23 @@ function Scene() {
     setLinks(results)
   })
 
-  const [base] = useState<Solve3D.JointTransform>({ position: V3O.zero(), rotation: QuaternionO.zeroRotation() })
-  const [debugLinks, setLinks] = useState<Solve3D.Link[]>([])
-
-  const controlsRef = useRef<ThreeOrbitControls>(null)
-
   return (
     <>
       <OrbitControls ref={controlsRef} />
       <Target position={target} setPosition={setTarget} />
-      <Suspense fallback={null}>
-        <group dispose={null} scale={[1, 1, 1]}>
-          <Base base={base} links={debugLinks}></Base>
-          <Target position={target} setPosition={setTarget} />
-          <JointTransforms base={base} links={debugLinks} />
-          <group ref={modelRef} dispose={null}>
-            <primitive object={nodes.shoulder} />
-            <skinnedMesh
-              geometry={nodes.Cylinder.geometry}
-              material={new MeshNormalMaterial()}
-              skeleton={nodes.Cylinder.skeleton}
-            ></skinnedMesh>
-          </group>
-          <skeletonHelper args={[nodes.shoulder]} />
-        </group>
-      </Suspense>
+
+      <Base base={base} links={debugLinks}></Base>
+      <JointTransforms base={base} links={debugLinks} />
+      <group ref={modelRef} dispose={null}>
+        <primitive object={nodes.shoulder} />
+        <skinnedMesh
+          geometry={nodes.Cylinder.geometry}
+          material={new MeshNormalMaterial()}
+          skeleton={nodes.Cylinder.skeleton}
+        ></skinnedMesh>
+      </group>
+      <skeletonHelper args={[nodes.shoulder]} />
+
       <GizmoHelper
         alignment={'bottom-right'}
         margin={[80, 80]}
@@ -132,7 +121,8 @@ function Scene() {
 }
 
 export default SkinnedMeshExample
-function getBones(firstBone: THREE.Bone) {
+
+function getBones(firstBone: Bone) {
   let currentBone = firstBone
   const bones: Bone[] = [firstBone]
   while (currentBone.children[0] !== undefined) {
@@ -140,6 +130,13 @@ function getBones(firstBone: THREE.Bone) {
     currentBone = currentBone.children[0] as Bone
   }
   return bones
+}
+
+type GLTFResult = GLTF & {
+  nodes: {
+    Cylinder: THREE.SkinnedMesh
+    shoulder: THREE.Bone
+  }
 }
 
 useGLTF.preload(modelSrc)
