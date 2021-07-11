@@ -219,7 +219,7 @@ describe('solve', () => {
     let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'local' } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
-    const result = solve(links, base, target, { learningRate: 10e-2 })
+    const result = solve(links, base, target, { learningRate: 0 })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
@@ -234,7 +234,7 @@ describe('solve', () => {
     ]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
-    const result = solve(links, base, target, { learningRate: 10e-2 })
+    const result = solve(links, base, target, { learningRate: 0 })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
