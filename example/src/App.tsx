@@ -9,6 +9,7 @@ import ConstrainedLocalRotation3D from './demos/three-dimensional/ConstrainedLoc
 import ConstrainedGlobalRotation2D from './demos/two-dimensional/ConstrainedGlobalRotation2D'
 import ConstrainedGlobalRotation3D from './demos/three-dimensional/ConstrainedGlobalRotation3D'
 import WebXRExample from './demos/three-dimensional/web-xr/WebXR'
+import MovingBaseExample from './demos/three-dimensional/moving-base/MovingBase'
 
 function App() {
   return (
@@ -48,6 +49,9 @@ function App() {
           <WebXRExample />
         </Suspense>
       </Route>
+      <Route path="/moving-base">
+        <MovingBaseExample />
+      </Route>
     </HashRouter>
   )
 }
@@ -84,6 +88,9 @@ function Menu() {
         </li>
         <li className={pathname === '/web-xr' ? 'highlighted' : ''}>
           <Link to="/web-xr">Web XR</Link>
+        </li>
+        <li className={pathname === '/moving-base' ? 'highlighted' : ''}>
+          <Link to="/moving-base">Moving base</Link>
         </li>
         <li className={pathname === '/3d-local' ? 'highlighted' : ''}>
           <Link to="/3d-local">Constrained local rotation</Link>
