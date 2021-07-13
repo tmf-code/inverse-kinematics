@@ -1,15 +1,15 @@
-import { OrbitControls, useGLTF } from '@react-three/drei'
+import { OrbitControls, Sphere, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { MathUtils, QuaternionO, Solve3D, V3, V3O } from 'inverse-kinematics'
 import React, { Suspense, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { Bone, MeshNormalMaterial, Vector3 } from 'three'
+import { Bone, MeshNormalMaterial, Object3D, Vector3 } from 'three'
 import { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { Base } from '../components/Base'
 import { JointTransforms } from '../components/JointTransforms'
 import { Target } from '../components/Target'
-import { useCircularMotion } from '../moving-ends/useCircularMotion'
 import modelSrc from './arm2.gltf?url'
+import { useCircularMotion } from './useCircularMotion'
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -18,7 +18,7 @@ type GLTFResult = GLTF & {
   }
 }
 
-function MovingBaseExample() {
+function MovingEndsExample() {
   return (
     <Canvas
       style={{
@@ -42,10 +42,11 @@ function Scene() {
 
   const [base] = useState<Solve3D.JointTransform>({ position: V3O.zero(), rotation: QuaternionO.zeroRotation() })
   const [debugLinks, setLinks] = useState<Solve3D.Link[]>([])
-  const [target, setTarget] = useState<V3>([0, 0, 0])
 
+  const targetRef = useRef<Object3D>(null)
   useFrame(() => {
     // Get base position
+    if (!targetRef.current) return
     const firstBone = modelRef.current?.children.find((child) => (child as Bone).isBone) as Bone | undefined
     if (!firstBone) return
 
@@ -78,12 +79,14 @@ function Scene() {
 
     const knownRangeOfMovement = links.reduce((acc, cur) => acc + V3O.euclideanLength(cur.position), 0)
 
+    const target = V3O.fromVector3(targetRef.current.getWorldPosition(new Vector3()))
+
     const results = Solve3D.solve(links, baseTransform, target, {
       learningRate: learningRate(knownRangeOfMovement),
       acceptedError: knownRangeOfMovement / 100,
     }).links
 
-    results.forEach((link, index, array) => {
+    results.forEach((link, index) => {
       const bone = bones[index]!
       bone.quaternion.set(...link.rotation)
     })
@@ -93,14 +96,21 @@ function Scene() {
 
   useCircularMotion(modelRef, 5, 1 / 3)
 
+  useCircularMotion(targetRef, 8, 1 / 2)
   return (
     <>
-      <Target setPosition={setTarget} position={target} />
+      <Sphere ref={targetRef} position={[0, 3, 0]} material-color="blue" />
+      <Sphere position={base.position as [number, number, number]} material-color="magenta" />
       <OrbitControls />
       <Base base={base} links={debugLinks} />
       <JointTransforms base={base} links={debugLinks} />
 
-      <group dispose={null} scale={[0.2, 0.2, 0.2]} position={[-1, 1.5, -2]}>
+      <mesh scale={[10, 0.1, 10]} position={[0, base.position[1], 0]}>
+        <meshDepthMaterial />
+        <sphereBufferGeometry />
+      </mesh>
+
+      <group dispose={null}>
         <group ref={modelRef} dispose={null}>
           <primitive object={nodes.shoulder} />
           <skinnedMesh
@@ -115,7 +125,7 @@ function Scene() {
   )
 }
 
-export default MovingBaseExample
+export default MovingEndsExample
 
 function getBones(firstBone: THREE.Bone) {
   let currentBone = firstBone
@@ -135,12 +145,12 @@ function learningRate(totalLength: number): (errorDistance: number) => number {
     const cutoff = 0.1
 
     if (relativeDistanceToTarget > cutoff) {
-      return 10e-3
+      return 10e-4
     }
 
     const remainingDistance = relativeDistanceToTarget / 0.02
-    const minimumLearningRate = 10e-4
+    const minimumLearningRate = 10e-5
 
-    return minimumLearningRate + remainingDistance * 10e-4
+    return minimumLearningRate + remainingDistance * 10e-5
   }
 }
