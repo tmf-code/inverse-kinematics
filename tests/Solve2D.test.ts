@@ -243,11 +243,144 @@ describe('solve FABRIK', () => {
   })
 })
 
+describe('solve CCD', () => {
+  it('Runs with empty links array', () => {
+    const links: Link[] = []
+    const linksCopy = cloneDeep(links)
+    solve(links, { position: [0, 0], rotation: 0 }, [0, 0], { method: 'CCD' })
+
+    expect(links).toStrictEqual<Link[]>(linksCopy)
+  })
+
+  it('Reduces distance to target each time it is called', () => {
+    const links: Link[] = [{ rotation: 0, position: [50, 0] }]
+    const target: V2 = [0, 50]
+
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Reduces distance to target each time it is called with complex chain', () => {
+    const links: Link[] = [
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+      { rotation: 0, position: [50, 0] },
+    ]
+    const target: V2 = [0, 50]
+
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Respects no rotation unary constraint', () => {
+    const links: Link[] = [{ rotation: 0, position: [50, 0], constraints: 0 }]
+    const target: V2 = [0, 50]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidNotImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Respects unary constraint', () => {
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: Math.PI / 2 }]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    let error: number
+    let lastError = getErrorDistance(links, base, target)
+    while (true) {
+      const result = solve(links, base, target, { learningRate: 10e-2, method: 'CCD' })
+      links = result.links
+      error = result.getErrorDistance()
+
+      const errorDifference = lastError - error
+      const didNotImprove = errorDifference <= 0
+      if (didNotImprove) break
+
+      lastError = error
+    }
+
+    const expectedError = V2O.euclideanDistance(target, [0.7071, 0.7071])
+    expect(error).toBeCloseTo(expectedError)
+
+    const jointTransforms = getJointTransforms(links, base)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('Respects no rotation binary constraint', () => {
+    const links: Link[] = [{ rotation: 0, position: [50, 0], constraints: { min: 0, max: 0 } }]
+    const target: V2 = [0, 50]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    solveAndCheckDidNotImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Respects binary constraint', () => {
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { min: -Math.PI / 4, max: Math.PI / 4 } }]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+
+    let error: number
+    let lastError = getErrorDistance(links, base, target)
+    while (true) {
+      const result = solve(links, base, target, { learningRate: 10e-2, method: 'CCD' })
+      links = result.links
+      error = result.getErrorDistance()
+
+      const errorDifference = lastError - error
+      const didNotImprove = errorDifference <= 0
+      if (didNotImprove) break
+
+      lastError = error
+    }
+    const expectedError = V2O.euclideanDistance(target, [0.7071, 0.7071])
+    expect(error).toBeCloseTo(expectedError)
+
+    const jointTransforms = getJointTransforms(links, base)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('Respects exact local constraint', () => {
+    let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'local' } }]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+    const result = solve(links, base, target, { learningRate: 0, method: 'CCD' })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('Respects exact global constraint', () => {
+    let links: Link[] = [
+      { rotation: 0, position: [1, 0] },
+      { rotation: 0, position: [1, 0] },
+      { rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'global' } },
+    ]
+    const target: V2 = [0, 1]
+    const base: JointTransform = { position: [0, 0], rotation: 0 }
+    const result = solve(links, base, target, { learningRate: 0, method: 'CCD' })
+    links = result.links
+
+    const jointTransforms = getJointTransforms(links, base)
+
+    expect(jointTransforms.transforms[3]?.rotation).toBe(Math.PI / 4)
+  })
+})
+
 function cloneDeep<T>(object: T): T {
   return JSON.parse(JSON.stringify(object))
 }
 
-function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V2, times: number) {
+function solveAndCheckDidImprove(
+  links: Link[],
+  base: JointTransform,
+  target: V2,
+  times: number,
+  method: 'CCD' | 'FABRIK' = 'FABRIK',
+) {
   const options: SolveOptions = {
     acceptedError: 0,
   }
@@ -257,13 +390,19 @@ function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V2
   for (let index = 0; index < times; index++) {
     const linksThisIteration = solveResult?.links ?? links
     const errorBefore = getErrorDistance(linksThisIteration, base, target)
-    solveResult = solve(linksThisIteration, base, target, options)
+    solveResult = solve(linksThisIteration, base, target, { ...options, method })
     const errorAfter = solveResult.getErrorDistance()
     expect(errorBefore).toBeGreaterThan(errorAfter)
   }
 }
 
-function solveAndCheckDidNotImprove(links: Link[], base: JointTransform, target: V2, times: number) {
+function solveAndCheckDidNotImprove(
+  links: Link[],
+  base: JointTransform,
+  target: V2,
+  times: number,
+  method: 'CCD' | 'FABRIK' = 'FABRIK',
+) {
   const options: SolveOptions = {
     acceptedError: 0,
   }
@@ -273,7 +412,7 @@ function solveAndCheckDidNotImprove(links: Link[], base: JointTransform, target:
   for (let index = 0; index < times; index++) {
     const linksThisIteration = solveResult?.links ?? links
     const errorBefore = getErrorDistance(linksThisIteration, base, target)
-    solveResult = solve(linksThisIteration, base, target, options)
+    solveResult = solve(linksThisIteration, base, target, { ...options, method })
     const errorAfter = solveResult.getErrorDistance()
     expect(errorBefore).not.toBeGreaterThan(errorAfter)
   }
