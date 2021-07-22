@@ -258,7 +258,7 @@ describe('solve CCD', () => {
 
     const base: JointTransform = { position: [0, 0], rotation: 0 }
 
-    solveAndCheckDidImprove(links, base, target, 3, 'CCD')
+    solveAndCheckDidImprove(links, base, target, 1, 'CCD')
   })
 
   it('Reduces distance to target each time it is called with complex chain', () => {

@@ -83,7 +83,7 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
       withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
       break
     case 'CCD':
-      withAngleStep = solveCCD(links, target, deltaAngle, learningRate, joints, error)
+      withAngleStep = solveCCD(links, target, baseJoint, acceptedError)
       break
     default:
       withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
@@ -164,39 +164,33 @@ function applyConstraints(
   })
 }
 
-function solveCCD(
-  links: Link[],
-  target: V2,
-  deltaAngle: number,
-  learningRate: number | ((errorDistance: number) => number),
-  joints: JointTransform[],
-  error: number,
-): Link[] {
-  throw new Error('Solve CCD not yet implemented')
+function solveCCD(links: Link[], target: V2, baseJoint: JointTransform, acceptedError: number): Link[] {
+  // throw new Error('Solve CCD not yet implemented')
   /**
    * 1. From base to tip, point 'projection' at target
    */
-  const withAngleStep = links.map(({ rotation = 0, position, constraints }, index) => {
-    const linkWithAngleDelta = {
-      position,
-      rotation: rotation + deltaAngle,
-    }
 
-    // Get remaining links from this links joint
-    const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(index + 1)]
+  let resultLink: Link[] = [...links.map(copyLink)]
 
-    // Get gradient from small change in joint angle
-    const joint = joints[index]!
-    const projectedError = getErrorDistance(projectedLinks, joint, target)
-    const gradient = (projectedError - error) / deltaAngle
+  for (let index = resultLink.length - 1; index >= 0; index--) {
+    const joints = getJointTransforms(resultLink, baseJoint)
+    const effectorPosition = joints.effectorPosition
+    const error = V2O.euclideanDistance(target, effectorPosition)
 
-    // Get resultant angle step which minimizes error
-    const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
+    if (error < acceptedError) break
 
-    return { rotation: rotation + angleStep, position, constraints }
-  })
+    const link = resultLink[index]!
+    const { rotation, position, constraints } = link
+    const joint = joints.transforms[index]!
 
-  return withAngleStep
+    const directionToTarget = V2O.angle(V2O.subtract(target, joint.position))
+    const directionToEffector = V2O.angle(V2O.subtract(effectorPosition, joint.position))
+    const angleBetween = directionToEffector - directionToTarget
+
+    resultLink[index] = { rotation: rotation - angleBetween, position, constraints }
+  }
+
+  return resultLink
 }
 
 export interface JointTransform {
