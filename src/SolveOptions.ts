@@ -1,5 +1,9 @@
 export interface SolveOptions {
   /**
+   * @default "FABRIK"
+   */
+  method?: 'FABRIK' | 'CCD'
+  /**
    * Angle gap taken to calculate the gradient of the error function
    * Usually the default here will do.
    * @default 0.00001
