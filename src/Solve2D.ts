@@ -61,7 +61,108 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
   const learningRate = options?.learningRate ?? 0.0001
 
   const acceptedError = options?.acceptedError ?? 0
+  const method = options?.method ?? 'FABRIK'
 
+  switch (method) {
+    case 'FABRIK':
+      return solveFABRIK(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
+    case 'CCD':
+      return solveCCD(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
+
+    default:
+      return solveFABRIK(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
+  }
+}
+
+function solveFABRIK(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V2,
+  deltaAngle: number,
+  learningRate: number | ((errorDistance: number) => number),
+  acceptedError: number,
+): SolveResult {
+  // Precalculate joint positions
+  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
+
+  const error = V2O.euclideanDistance(target, effectorPosition)
+
+  if (error < acceptedError)
+    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
+
+  if (joints.length !== links.length + 1) {
+    throw new Error(
+      `Joint transforms should have the same length as links + 1. Got ${joints.length}, expected ${links.length}`,
+    )
+  }
+
+  /**
+   * 1. Find angle steps that minimize error
+   * 2. Apply angle steps
+   */
+  const withAngleStep = links.map(({ rotation = 0, position, constraints }, index) => {
+    const linkWithAngleDelta = {
+      position,
+      rotation: rotation + deltaAngle,
+    }
+
+    // Get remaining links from this links joint
+    const projectedLinks: Link[] = [linkWithAngleDelta, ...links.slice(index + 1)]
+
+    // Get gradient from small change in joint angle
+    const joint = joints[index]!
+    const projectedError = getErrorDistance(projectedLinks, joint, target)
+    const gradient = (projectedError - error) / deltaAngle
+
+    // Get resultant angle step which minimizes error
+    const angleStep = -gradient * (typeof learningRate === 'function' ? learningRate(projectedError) : learningRate)
+
+    return { rotation: rotation + angleStep, position, constraints }
+  })
+
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+
+  const withConstraints = withAngleStep.map(({ position, rotation, constraints }, index) => {
+    if (constraints === undefined) return { position, rotation }
+
+    if (typeof constraints === 'number') {
+      const halfConstraint = constraints / 2
+      const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
+      return { position, rotation: clampedRotation, constraints: constraints }
+    }
+
+    if (isExactRotation(constraints)) {
+      if (constraints.type === 'global') {
+        const targetRotation = constraints.value
+        const currentRotation = adjustedJoints[index + 1]!.rotation
+        const deltaRotation = targetRotation - currentRotation
+
+        return { position, rotation: rotation + deltaRotation, constraints: constraints }
+      } else {
+        return { position, rotation: constraints.value, constraints: constraints }
+      }
+    } else {
+      const clampedRotation = clamp(rotation, constraints.min, constraints.max)
+      return { position, rotation: clampedRotation, constraints }
+    }
+  })
+
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
+  }
+}
+
+function solveCCD(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V2,
+  deltaAngle: number,
+  learningRate: number | ((errorDistance: number) => number),
+  acceptedError: number,
+): SolveResult {
+  throw new Error('Solve CCD not yet implemented')
   // Precalculate joint positions
   const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
 
