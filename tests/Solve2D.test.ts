@@ -116,7 +116,7 @@ describe('getJointTransforms', () => {
   })
 })
 
-describe('solve', () => {
+describe('solve FABRIK', () => {
   it('Runs with empty links array', () => {
     const links: Link[] = []
     const linksCopy = cloneDeep(links)
