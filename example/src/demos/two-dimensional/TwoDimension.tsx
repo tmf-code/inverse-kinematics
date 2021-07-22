@@ -10,12 +10,12 @@ import { useControls } from 'leva'
 
 const base: Solve2D.JointTransform = { position: [0, 0], rotation: 0 }
 
-export default function TwoDimension() {
+export default function TwoDimension({ method }: { method: 'CCD' | 'FABRIK' }) {
   const [target, setTarget] = useState([500, 50] as V2)
   const [links, setLinks] = useState<Solve2D.Link[]>([])
 
   const { linkCount, linkLength, linkMinAngle, linkMaxAngle } = useControls({
-    linkCount: { value: 4, min: 0, max: 50, step: 1 },
+    linkCount: { value: 1, min: 0, max: 50, step: 1 },
     linkLength: { value: 200, min: 1, max: 200, step: 10 },
     linkMinAngle: { value: -90, min: -360, max: 0, step: 10 },
     linkMaxAngle: { value: 90, min: 0, max: 360, step: 10 },
@@ -46,6 +46,7 @@ export default function TwoDimension() {
     const result = Solve2D.solve(links, base, target, {
       learningRate,
       acceptedError: 10,
+      method,
     }).links
 
     links.forEach((_, index) => {
@@ -82,6 +83,6 @@ export default function TwoDimension() {
 const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, linkMaxAngle: number): Solve2D.Link[] =>
   Array.from({ length: linkCount }).map(() => ({
     position: [linkLength, 0],
-    constraint: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    constraints: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
     rotation: 0,
   }))
