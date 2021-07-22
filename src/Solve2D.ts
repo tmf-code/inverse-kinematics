@@ -1,7 +1,7 @@
-import { clamp } from './math/MathUtils'
 import { V2, V2O } from '.'
-import { SolveOptions } from './SolveOptions'
+import { clamp } from './math/MathUtils'
 import { Range } from './Range'
+import { SolveOptions } from './SolveOptions'
 
 export interface Link {
   /**
@@ -63,39 +63,50 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
   const acceptedError = options?.acceptedError ?? 0
   const method = options?.method ?? 'FABRIK'
 
+  // Precalculate joint positions
+  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
+
+  const error = V2O.euclideanDistance(target, effectorPosition)
+
+  if (error < acceptedError)
+    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
+
+  if (joints.length !== links.length + 1) {
+    throw new Error(
+      `Joint transforms should have the same length as links + 1. Got ${joints.length}, expected ${links.length}`,
+    )
+  }
+
+  let withAngleStep: Link[]
   switch (method) {
     case 'FABRIK':
-      return solveFABRIK(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
+      withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
+      break
     case 'CCD':
-      return solveCCD(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
-
+      withAngleStep = solveCCD(links, target, deltaAngle, learningRate, joints, error)
+      break
     default:
-      return solveFABRIK(links, baseJoint, target, deltaAngle, learningRate, acceptedError)
+      withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
+  }
+
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
   }
 }
 
 function solveFABRIK(
   links: Link[],
-  baseJoint: JointTransform,
+
   target: V2,
   deltaAngle: number,
   learningRate: number | ((errorDistance: number) => number),
-  acceptedError: number,
-): SolveResult {
-  // Precalculate joint positions
-  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
-
-  const error = V2O.euclideanDistance(target, effectorPosition)
-
-  if (error < acceptedError)
-    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
-
-  if (joints.length !== links.length + 1) {
-    throw new Error(
-      `Joint transforms should have the same length as links + 1. Got ${joints.length}, expected ${links.length}`,
-    )
-  }
-
+  joints: JointTransform[],
+  error: number,
+): Link[] {
   /**
    * 1. Find angle steps that minimize error
    * 2. Apply angle steps
@@ -120,9 +131,14 @@ function solveFABRIK(
     return { rotation: rotation + angleStep, position, constraints }
   })
 
-  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  return withAngleStep
+}
 
-  const withConstraints = withAngleStep.map(({ position, rotation, constraints }, index) => {
+function applyConstraints(
+  withAngleStep: { rotation: number; position: V2; constraints?: Constraints }[],
+  adjustedJoints: JointTransform[],
+) {
+  return withAngleStep.map(({ position, rotation, constraints }, index) => {
     if (constraints === undefined) return { position, rotation }
 
     if (typeof constraints === 'number') {
@@ -146,40 +162,19 @@ function solveFABRIK(
       return { position, rotation: clampedRotation, constraints }
     }
   })
-
-  return {
-    links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
-    isWithinAcceptedError: undefined,
-  }
 }
 
 function solveCCD(
   links: Link[],
-  baseJoint: JointTransform,
   target: V2,
   deltaAngle: number,
   learningRate: number | ((errorDistance: number) => number),
-  acceptedError: number,
-): SolveResult {
+  joints: JointTransform[],
+  error: number,
+): Link[] {
   throw new Error('Solve CCD not yet implemented')
-  // Precalculate joint positions
-  const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
-
-  const error = V2O.euclideanDistance(target, effectorPosition)
-
-  if (error < acceptedError)
-    return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
-
-  if (joints.length !== links.length + 1) {
-    throw new Error(
-      `Joint transforms should have the same length as links + 1. Got ${joints.length}, expected ${links.length}`,
-    )
-  }
-
   /**
-   * 1. Find angle steps that minimize error
-   * 2. Apply angle steps
+   * 1. From base to tip, point 'projection' at target
    */
   const withAngleStep = links.map(({ rotation = 0, position, constraints }, index) => {
     const linkWithAngleDelta = {
@@ -201,38 +196,7 @@ function solveCCD(
     return { rotation: rotation + angleStep, position, constraints }
   })
 
-  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
-
-  const withConstraints = withAngleStep.map(({ position, rotation, constraints }, index) => {
-    if (constraints === undefined) return { position, rotation }
-
-    if (typeof constraints === 'number') {
-      const halfConstraint = constraints / 2
-      const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
-      return { position, rotation: clampedRotation, constraints: constraints }
-    }
-
-    if (isExactRotation(constraints)) {
-      if (constraints.type === 'global') {
-        const targetRotation = constraints.value
-        const currentRotation = adjustedJoints[index + 1]!.rotation
-        const deltaRotation = targetRotation - currentRotation
-
-        return { position, rotation: rotation + deltaRotation, constraints: constraints }
-      } else {
-        return { position, rotation: constraints.value, constraints: constraints }
-      }
-    } else {
-      const clampedRotation = clamp(rotation, constraints.min, constraints.max)
-      return { position, rotation: clampedRotation, constraints }
-    }
-  })
-
-  return {
-    links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
-    isWithinAcceptedError: undefined,
-  }
+  return withAngleStep
 }
 
 export interface JointTransform {
