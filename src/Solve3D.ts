@@ -363,19 +363,19 @@ function copyConstraints(constraints: Constraints): Constraints {
 
   if (typeof pitch === 'number') {
     result.pitch = pitch
-  } else if (typeof pitch !== undefined) {
+  } else if (pitch !== undefined) {
     result.pitch = { ...pitch! }
   }
 
   if (typeof yaw === 'number') {
     result.yaw = yaw
-  } else if (typeof yaw !== undefined) {
+  } else if (yaw !== undefined) {
     result.yaw = { ...yaw! }
   }
 
   if (typeof roll === 'number') {
     result.roll = roll
-  } else if (typeof roll !== undefined) {
+  } else if (roll !== undefined) {
     result.roll = { ...roll! }
   }
 
