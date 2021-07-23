@@ -170,16 +170,16 @@ function solveCCD(
   { learningRate, acceptedError }: Required<SolveCCDOptions>,
 ): SolveResult {
   // 1. From base to tip, point projection from joint to effector at target
-  let withAngleStep: Link[] = [...links.map(copyLink)]
+  let adjustedLinks: Link[] = [...links.map(copyLink)]
 
-  for (let index = withAngleStep.length - 1; index >= 0; index--) {
-    const joints = getJointTransforms(withAngleStep, baseJoint)
+  for (let index = adjustedLinks.length - 1; index >= 0; index--) {
+    const joints = getJointTransforms(adjustedLinks, baseJoint)
     const effectorPosition = joints.effectorPosition
     const error = V3O.euclideanDistance(target, effectorPosition)
 
     if (error < acceptedError) break
 
-    const link = withAngleStep[index]!
+    const link = adjustedLinks[index]!
     const { rotation, position, constraints } = link
     const joint = joints.transforms[index]!
 
@@ -206,16 +206,17 @@ function solveCCD(
       angleBetween,
       typeof learningRate === 'function' ? learningRate(error) : learningRate,
     )
+    const withAngleStep = { rotation: QuaternionO.multiply(rotation, angleStep), position, constraints }
+    adjustedLinks[index] = withAngleStep
 
-    withAngleStep[index] = { rotation: QuaternionO.multiply(rotation, angleStep), position, constraints }
+    const adjustedJoints = getJointTransforms(adjustedLinks, baseJoint)
+    const withConstraint = applyConstraint(withAngleStep, adjustedJoints.transforms[index + 1]!)
+    adjustedLinks[index] = withConstraint
   }
 
-  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
-  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
-
   return {
-    links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    links: adjustedLinks,
+    getErrorDistance: () => getErrorDistance(adjustedLinks, baseJoint, target),
     isWithinAcceptedError: undefined,
   }
 }
@@ -225,71 +226,73 @@ export interface JointTransform {
   rotation: Quaternion
 }
 
-function applyConstraints(withAngleStep: Link[], adjustedJoints: JointTransform[]) {
-  return withAngleStep.map(({ position, rotation, constraints }, index) => {
-    if (constraints === undefined) return { position: position, rotation }
+function applyConstraint({ position, rotation, constraints }: Link, joint: JointTransform): Link {
+  if (constraints === undefined) return { position: position, rotation }
 
-    if (isExactRotation(constraints)) {
-      if (constraints.type === 'global') {
-        const targetRotation = constraints.value
-        const currentRotation = adjustedJoints[index + 1]!.rotation
-        const adjustedRotation = QuaternionO.multiply(
-          QuaternionO.multiply(rotation, QuaternionO.inverse(currentRotation)),
-          targetRotation,
-        )
+  if (isExactRotation(constraints)) {
+    if (constraints.type === 'global') {
+      const targetRotation = constraints.value
+      const currentRotation = joint.rotation
+      const adjustedRotation = QuaternionO.multiply(
+        QuaternionO.multiply(rotation, QuaternionO.inverse(currentRotation)),
+        targetRotation,
+      )
 
-        return { position, rotation: adjustedRotation, constraints }
-      } else {
-        return { position, rotation: constraints.value, constraints }
-      }
-    }
-
-    const { pitch, yaw, roll } = constraints
-
-    let pitchMin: number
-    let pitchMax: number
-    if (typeof pitch === 'number') {
-      pitchMin = -pitch / 2
-      pitchMax = pitch / 2
-    } else if (pitch === undefined) {
-      pitchMin = -Infinity
-      pitchMax = Infinity
+      return { position, rotation: adjustedRotation, constraints }
     } else {
-      pitchMin = pitch.min
-      pitchMax = pitch.max
+      return { position, rotation: constraints.value, constraints }
     }
+  }
 
-    let yawMin: number
-    let yawMax: number
-    if (typeof yaw === 'number') {
-      yawMin = -yaw / 2
-      yawMax = yaw / 2
-    } else if (yaw === undefined) {
-      yawMin = -Infinity
-      yawMax = Infinity
-    } else {
-      yawMin = yaw.min
-      yawMax = yaw.max
-    }
+  const { pitch, yaw, roll } = constraints
 
-    let rollMin: number
-    let rollMax: number
-    if (typeof roll === 'number') {
-      rollMin = -roll / 2
-      rollMax = roll / 2
-    } else if (roll === undefined) {
-      rollMin = -Infinity
-      rollMax = Infinity
-    } else {
-      rollMin = roll.min
-      rollMax = roll.max
-    }
+  let pitchMin: number
+  let pitchMax: number
+  if (typeof pitch === 'number') {
+    pitchMin = -pitch / 2
+    pitchMax = pitch / 2
+  } else if (pitch === undefined) {
+    pitchMin = -Infinity
+    pitchMax = Infinity
+  } else {
+    pitchMin = pitch.min
+    pitchMax = pitch.max
+  }
 
-    const lowerBound: V3 = [pitchMin, yawMin, rollMin]
-    const upperBound: V3 = [pitchMax, yawMax, rollMax]
-    const clampedRotation = QuaternionO.clamp(rotation, lowerBound, upperBound)
-    return { position: position, rotation: clampedRotation, constraints: copyConstraints(constraints) }
-  })
+  let yawMin: number
+  let yawMax: number
+  if (typeof yaw === 'number') {
+    yawMin = -yaw / 2
+    yawMax = yaw / 2
+  } else if (yaw === undefined) {
+    yawMin = -Infinity
+    yawMax = Infinity
+  } else {
+    yawMin = yaw.min
+    yawMax = yaw.max
+  }
+
+  let rollMin: number
+  let rollMax: number
+  if (typeof roll === 'number') {
+    rollMin = -roll / 2
+    rollMax = roll / 2
+  } else if (roll === undefined) {
+    rollMin = -Infinity
+    rollMax = Infinity
+  } else {
+    rollMin = roll.min
+    rollMax = roll.max
+  }
+
+  const lowerBound: V3 = [pitchMin, yawMin, rollMin]
+  const upperBound: V3 = [pitchMax, yawMax, rollMax]
+  const clampedRotation = QuaternionO.clamp(rotation, lowerBound, upperBound)
+  return { position: position, rotation: clampedRotation, constraints: copyConstraints(constraints) }
+}
+
+function applyConstraints(links: Link[], joints: JointTransform[]): Link[] {
+  return links.map((link, index) => applyConstraint(link, joints[index + 1]!))
 }
 
 /**

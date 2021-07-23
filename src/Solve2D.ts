@@ -141,16 +141,16 @@ function solveCCD(
   { acceptedError, learningRate }: Required<SolveCCDOptions>,
 ): SolveResult {
   // 1. From base to tip, point projection from joint to effector at target
-  let withAngleStep: Link[] = [...links.map(copyLink)]
+  let adjustedLinks: Link[] = [...links.map(copyLink)]
 
-  for (let index = withAngleStep.length - 1; index >= 0; index--) {
-    const joints = getJointTransforms(withAngleStep, baseJoint)
+  for (let index = adjustedLinks.length - 1; index >= 0; index--) {
+    const joints = getJointTransforms(adjustedLinks, baseJoint)
     const effectorPosition = joints.effectorPosition
     const error = V2O.euclideanDistance(target, effectorPosition)
 
     if (error < acceptedError) break
 
-    const link = withAngleStep[index]!
+    const link = adjustedLinks[index]!
     const { rotation, position, constraints } = link
     const joint = joints.transforms[index]!
 
@@ -159,11 +159,16 @@ function solveCCD(
     const angleBetween = directionToEffector - directionToTarget
 
     const angleStep = -angleBetween * (typeof learningRate === 'function' ? learningRate(error) : learningRate)
-    withAngleStep[index] = { rotation: rotation + angleStep, position, constraints }
+    const withAngleStep = { rotation: rotation + angleStep, position, constraints }
+    adjustedLinks[index] = withAngleStep
+
+    const adjustedJoints = getJointTransforms(adjustedLinks, baseJoint)
+    const withConstraint = applyConstraint(withAngleStep, adjustedJoints.transforms[index + 1]!)
+    adjustedLinks[index] = withConstraint
   }
 
-  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
-  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
+  const adjustedJoints = getJointTransforms(adjustedLinks, baseJoint).transforms
+  const withConstraints = applyConstraints(adjustedLinks, adjustedJoints)
 
   return {
     links: withConstraints,
@@ -171,35 +176,36 @@ function solveCCD(
     isWithinAcceptedError: undefined,
   }
 }
+function applyConstraint({ rotation, position, constraints }: Link, joint: JointTransform): Link {
+  if (constraints === undefined) return { position, rotation }
+
+  if (typeof constraints === 'number') {
+    const halfConstraint = constraints / 2
+    const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
+    return { position, rotation: clampedRotation, constraints: constraints }
+  }
+
+  if (isExactRotation(constraints)) {
+    if (constraints.type === 'global') {
+      const targetRotation = constraints.value
+      const currentRotation = joint.rotation
+      const deltaRotation = targetRotation - currentRotation
+
+      return { position, rotation: rotation + deltaRotation, constraints: constraints }
+    } else {
+      return { position, rotation: constraints.value, constraints: constraints }
+    }
+  } else {
+    const clampedRotation = clamp(rotation, constraints.min, constraints.max)
+    return { position, rotation: clampedRotation, constraints }
+  }
+}
 
 function applyConstraints(
-  withAngleStep: { rotation: number; position: V2; constraints?: Constraints }[],
-  adjustedJoints: JointTransform[],
+  links: { rotation: number; position: V2; constraints?: Constraints }[],
+  joints: JointTransform[],
 ) {
-  return withAngleStep.map(({ position, rotation, constraints }, index) => {
-    if (constraints === undefined) return { position, rotation }
-
-    if (typeof constraints === 'number') {
-      const halfConstraint = constraints / 2
-      const clampedRotation = clamp(rotation, -halfConstraint, halfConstraint)
-      return { position, rotation: clampedRotation, constraints: constraints }
-    }
-
-    if (isExactRotation(constraints)) {
-      if (constraints.type === 'global') {
-        const targetRotation = constraints.value
-        const currentRotation = adjustedJoints[index + 1]!.rotation
-        const deltaRotation = targetRotation - currentRotation
-
-        return { position, rotation: rotation + deltaRotation, constraints: constraints }
-      } else {
-        return { position, rotation: constraints.value, constraints: constraints }
-      }
-    } else {
-      const clampedRotation = clamp(rotation, constraints.min, constraints.max)
-      return { position, rotation: clampedRotation, constraints }
-    }
-  })
+  return links.map((link, index) => applyConstraint(link, joints[index + 1]!))
 }
 
 export interface JointTransform {

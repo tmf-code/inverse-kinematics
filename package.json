@@ -1,6 +1,6 @@
 {
   "name": "inverse-kinematics",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "author": "Jae Perris & Alexandra Barancova",
   "description": "Inverse kinematics for 2D and 3D applications",
   "main": "dist/index.js",
