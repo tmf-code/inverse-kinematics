@@ -79,6 +79,7 @@ function Scene() {
     const knownRangeOfMovement = links.reduce((acc, cur) => acc + V3O.euclideanLength(cur.position), 0)
 
     const results = Solve3D.solve(links, baseTransform, target, {
+      method: 'FABRIK',
       learningRate: learningRate(knownRangeOfMovement),
       acceptedError: knownRangeOfMovement / 100,
     }).links

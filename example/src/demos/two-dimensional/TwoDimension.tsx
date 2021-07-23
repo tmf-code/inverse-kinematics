@@ -44,7 +44,7 @@ export default function TwoDimension({ method }: { method: 'CCD' | 'FABRIK' }) {
     }
 
     const result = Solve2D.solve(links, base, target, {
-      learningRate,
+      learningRate: method === 'FABRIK' ? learningRate : 1,
       acceptedError: 10,
       method,
     }).links

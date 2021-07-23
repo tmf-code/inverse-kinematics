@@ -1,7 +1,13 @@
 import { V2, V2O } from '.'
 import { clamp } from './math/MathUtils'
 import { Range } from './Range'
-import { SolveOptions } from './SolveOptions'
+import {
+  defaultCCDOptions,
+  defaultFABRIKOptions,
+  SolveCCDOptions,
+  SolveFABRIKOptions,
+  SolveOptions,
+} from './SolveOptions'
 
 export interface Link {
   /**
@@ -54,20 +60,41 @@ export interface SolveResult {
 
 /**
  * Changes joint angle to minimize distance of end effector to target
+ *
+ * If given no options, runs in FABRIK mode
  */
-export function solve(links: Link[], baseJoint: JointTransform, target: V2, options?: SolveOptions): SolveResult {
-  // Setup defaults
-  const deltaAngle = options?.deltaAngle ?? 0.00001
-  const learningRate = options?.learningRate ?? 0.0001
+export function solve(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V2,
+  options: SolveOptions = { method: 'FABRIK' },
+): SolveResult {
+  switch (options.method) {
+    case 'FABRIK':
+      return solveFABRIK(links, baseJoint, target, {
+        method: 'FABRIK',
+        acceptedError: options.acceptedError ?? defaultFABRIKOptions.acceptedError,
+        deltaAngle: options.deltaAngle ?? defaultFABRIKOptions.deltaAngle,
+        learningRate: options.learningRate ?? defaultFABRIKOptions.learningRate,
+      })
 
-  const acceptedError = options?.acceptedError ?? 0
-  const method = options?.method ?? 'FABRIK'
+    case 'CCD':
+      return solveCCD(links, baseJoint, target, {
+        method: 'CCD',
+        acceptedError: options.acceptedError ?? defaultCCDOptions.acceptedError,
+        learningRate: options.learningRate ?? defaultCCDOptions.learningRate,
+      })
+  }
+}
 
-  // Precalculate joint positions
+function solveFABRIK(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V2,
+  { learningRate, deltaAngle, acceptedError }: Required<SolveFABRIKOptions>,
+): SolveResult {
   const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
-
   const error = V2O.euclideanDistance(target, effectorPosition)
-
   if (error < acceptedError)
     return { links: links.map(copyLink), isWithinAcceptedError: true, getErrorDistance: () => error }
 
@@ -77,40 +104,6 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V2, opti
     )
   }
 
-  let withAngleStep: Link[]
-  switch (method) {
-    case 'FABRIK':
-      withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
-      break
-    case 'CCD':
-      withAngleStep = solveCCD(links, target, baseJoint, acceptedError)
-      break
-    default:
-      withAngleStep = solveFABRIK(links, target, deltaAngle, learningRate, joints, error)
-  }
-
-  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
-  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
-  return {
-    links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
-    isWithinAcceptedError: undefined,
-  }
-}
-
-function solveFABRIK(
-  links: Link[],
-
-  target: V2,
-  deltaAngle: number,
-  learningRate: number | ((errorDistance: number) => number),
-  joints: JointTransform[],
-  error: number,
-): Link[] {
-  /**
-   * 1. Find angle steps that minimize error
-   * 2. Apply angle steps
-   */
   const withAngleStep = links.map(({ rotation = 0, position, constraints }, index) => {
     const linkWithAngleDelta = {
       position,
@@ -131,7 +124,52 @@ function solveFABRIK(
     return { rotation: rotation + angleStep, position, constraints }
   })
 
-  return withAngleStep
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
+
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
+  }
+}
+
+function solveCCD(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V2,
+  { acceptedError, learningRate }: Required<SolveCCDOptions>,
+): SolveResult {
+  // 1. From base to tip, point projection from joint to effector at target
+  let withAngleStep: Link[] = [...links.map(copyLink)]
+
+  for (let index = withAngleStep.length - 1; index >= 0; index--) {
+    const joints = getJointTransforms(withAngleStep, baseJoint)
+    const effectorPosition = joints.effectorPosition
+    const error = V2O.euclideanDistance(target, effectorPosition)
+
+    if (error < acceptedError) break
+
+    const link = withAngleStep[index]!
+    const { rotation, position, constraints } = link
+    const joint = joints.transforms[index]!
+
+    const directionToTarget = V2O.angle(V2O.subtract(target, joint.position))
+    const directionToEffector = V2O.angle(V2O.subtract(effectorPosition, joint.position))
+    const angleBetween = directionToEffector - directionToTarget
+
+    const angleStep = -angleBetween * (typeof learningRate === 'function' ? learningRate(error) : learningRate)
+    withAngleStep[index] = { rotation: rotation + angleStep, position, constraints }
+  }
+
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
+
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
+  }
 }
 
 function applyConstraints(
@@ -162,35 +200,6 @@ function applyConstraints(
       return { position, rotation: clampedRotation, constraints }
     }
   })
-}
-
-function solveCCD(links: Link[], target: V2, baseJoint: JointTransform, acceptedError: number): Link[] {
-  // throw new Error('Solve CCD not yet implemented')
-  /**
-   * 1. From base to tip, point 'projection' at target
-   */
-
-  let resultLink: Link[] = [...links.map(copyLink)]
-
-  for (let index = resultLink.length - 1; index >= 0; index--) {
-    const joints = getJointTransforms(resultLink, baseJoint)
-    const effectorPosition = joints.effectorPosition
-    const error = V2O.euclideanDistance(target, effectorPosition)
-
-    if (error < acceptedError) break
-
-    const link = resultLink[index]!
-    const { rotation, position, constraints } = link
-    const joint = joints.transforms[index]!
-
-    const directionToTarget = V2O.angle(V2O.subtract(target, joint.position))
-    const directionToEffector = V2O.angle(V2O.subtract(effectorPosition, joint.position))
-    const angleBetween = directionToEffector - directionToTarget
-
-    resultLink[index] = { rotation: rotation - angleBetween, position, constraints }
-  }
-
-  return resultLink
 }
 
 export interface JointTransform {

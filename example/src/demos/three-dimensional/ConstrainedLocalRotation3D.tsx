@@ -44,6 +44,7 @@ export default function ConstrainedLocalRotation3D() {
     }
 
     const result = Solve3D.solve(links, base, target, {
+      method: 'FABRIK',
       learningRate,
       acceptedError: 0.1,
     }).links

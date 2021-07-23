@@ -32,7 +32,10 @@ function App() {
         <TwoDimension method="FABRIK" />
       </Route>
       <Route path="/3d">
-        <Basic />
+        <Basic method="FABRIK" />
+      </Route>
+      <Route path="/3d-ccd">
+        <Basic method="CCD" />
       </Route>
       <Route path="/3d-local">
         <ConstrainedLocalRotation3D />
@@ -89,6 +92,9 @@ function Menu() {
       <ul>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D basic</Link>
+        </li>
+        <li className={pathname === '/3d-ccd' ? 'highlighted' : ''}>
+          <Link to="/3d-ccd">3D CCD</Link>
         </li>
         <li className={pathname === '/three-js' ? 'highlighted' : ''}>
           <Link to="/three-js">Three.js</Link>

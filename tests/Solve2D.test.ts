@@ -164,7 +164,7 @@ describe('solve FABRIK', () => {
     let error: number
     let lastError = getErrorDistance(links, base, target)
     while (true) {
-      const result = solve(links, base, target, { learningRate: 10e-2 })
+      const result = solve(links, base, target, { learningRate: 10e-2, method: 'FABRIK' })
       links = result.links
       error = result.getErrorDistance()
 
@@ -198,7 +198,7 @@ describe('solve FABRIK', () => {
     let error: number
     let lastError = getErrorDistance(links, base, target)
     while (true) {
-      const result = solve(links, base, target, { learningRate: 10e-2 })
+      const result = solve(links, base, target, { learningRate: 10e-2, method: 'FABRIK' })
       links = result.links
       error = result.getErrorDistance()
 
@@ -219,7 +219,7 @@ describe('solve FABRIK', () => {
     let links: Link[] = [{ rotation: 0, position: [1, 0], constraints: { value: Math.PI / 4, type: 'local' } }]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
-    const result = solve(links, base, target, { learningRate: 0 })
+    const result = solve(links, base, target, { learningRate: 0, method: 'FABRIK' })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
@@ -234,7 +234,7 @@ describe('solve FABRIK', () => {
     ]
     const target: V2 = [0, 1]
     const base: JointTransform = { position: [0, 0], rotation: 0 }
-    const result = solve(links, base, target, { learningRate: 0 })
+    const result = solve(links, base, target, { learningRate: 0, method: 'FABRIK' })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
@@ -383,6 +383,7 @@ function solveAndCheckDidImprove(
 ) {
   const options: SolveOptions = {
     acceptedError: 0,
+    method,
   }
 
   let solveResult: undefined | SolveResult
@@ -405,6 +406,7 @@ function solveAndCheckDidNotImprove(
 ) {
   const options: SolveOptions = {
     acceptedError: 0,
+    method,
   }
 
   let solveResult: undefined | SolveResult
