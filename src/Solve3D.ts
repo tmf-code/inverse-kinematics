@@ -2,6 +2,7 @@ import { QuaternionO, SolveOptions, V3O } from '.'
 import { Quaternion } from './math/Quaternion'
 import { V3 } from './math/V3'
 import { Range } from './Range'
+import { defaultCCDOptions, defaultFABRIKOptions, SolveCCDOptions, SolveFABRIKOptions } from './SolveOptions'
 
 export interface Link {
   /**
@@ -73,18 +74,40 @@ export interface SolveResult {
 
 /**
  * Changes joint angle to minimize distance of end effector to target
- * Mutates each link.angle
+ *
+ * If given no options, runs in FABRIK mode
  */
-export function solve(links: Link[], baseJoint: JointTransform, target: V3, options?: SolveOptions): SolveResult {
-  // Setup defaults
-  const deltaAngle = options?.deltaAngle ?? 0.00001
-  const learningRate = options?.learningRate ?? 0.0001
+export function solve(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V3,
+  options: SolveOptions = { method: 'FABRIK' },
+): SolveResult {
+  switch (options.method) {
+    case 'FABRIK':
+      return solveFABRIK(links, baseJoint, target, {
+        method: 'FABRIK',
+        acceptedError: options.acceptedError ?? defaultFABRIKOptions.acceptedError,
+        deltaAngle: options.deltaAngle ?? defaultFABRIKOptions.deltaAngle,
+        learningRate: options.learningRate ?? defaultFABRIKOptions.learningRate,
+      })
 
-  const acceptedError = options?.acceptedError ?? 0
+    case 'CCD':
+      return solveCCD(links, baseJoint, target, {
+        method: 'CCD',
+        acceptedError: options.acceptedError ?? defaultCCDOptions.acceptedError,
+        learningRate: options.learningRate ?? defaultCCDOptions.learningRate,
+      })
+  }
+}
 
-  // Precalculate joint positions
+function solveFABRIK(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V3,
+  { deltaAngle, learningRate, acceptedError }: Required<SolveFABRIKOptions>,
+): SolveResult {
   const { transforms: joints, effectorPosition } = getJointTransforms(links, baseJoint)
-
   const error = V3O.euclideanDistance(target, effectorPosition)
 
   if (error < acceptedError)
@@ -96,10 +119,6 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
     )
   }
 
-  /**
-   * 1. Find angle steps that minimize error
-   * 2. Apply angle steps
-   */
   const withAngleStep: Link[] = links.map(
     ({ position, rotation = QuaternionO.zeroRotation(), constraints }, linkIndex) => {
       // For each, calculate partial derivative, sum to give full numerical derivative
@@ -135,8 +154,79 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
   )
 
   const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
 
-  const withConstraints = withAngleStep.map(({ position, rotation, constraints }, index) => {
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
+  }
+}
+
+function solveCCD(
+  links: Link[],
+  baseJoint: JointTransform,
+  target: V3,
+  { learningRate, acceptedError }: Required<SolveCCDOptions>,
+): SolveResult {
+  // 1. From base to tip, point projection from joint to effector at target
+  let withAngleStep: Link[] = [...links.map(copyLink)]
+
+  for (let index = withAngleStep.length - 1; index >= 0; index--) {
+    const joints = getJointTransforms(withAngleStep, baseJoint)
+    const effectorPosition = joints.effectorPosition
+    const error = V3O.euclideanDistance(target, effectorPosition)
+
+    if (error < acceptedError) break
+
+    const link = withAngleStep[index]!
+    const { rotation, position, constraints } = link
+    const joint = joints.transforms[index]!
+
+    /**
+     * Following http://rodolphe-vaillant.fr/?e=114
+     *
+     * We found that if we didn't convert the world coordinate system here to local
+     * that it would give very unstable solutions. It seems that others have struggled
+     * with the same thing.
+     *
+     * https://github.com/zalo/zalo.github.io/blob/fb1b899ce9825b1123b0ebd2bfdce2459566e6db/assets/js/IK/IKExample.js#L67
+     */
+    const inverseRotation = QuaternionO.inverse(joint.rotation)
+    const rotatedTarget = V3O.rotate(target, inverseRotation)
+    const rotatedEffector = V3O.rotate(effectorPosition, inverseRotation)
+    const rotatedJoint = V3O.rotate(joint.position, inverseRotation)
+    const directionToTarget = V3O.subtract(rotatedTarget, rotatedJoint)
+    const directionToEffector = V3O.subtract(rotatedEffector, rotatedJoint)
+
+    const angleBetween = QuaternionO.rotationFromTo(directionToEffector, directionToTarget)
+
+    const angleStep: Quaternion = QuaternionO.slerp(
+      QuaternionO.zeroRotation(),
+      angleBetween,
+      typeof learningRate === 'function' ? learningRate(error) : learningRate,
+    )
+
+    withAngleStep[index] = { rotation: QuaternionO.multiply(rotation, angleStep), position, constraints }
+  }
+
+  const adjustedJoints = getJointTransforms(withAngleStep, baseJoint).transforms
+  const withConstraints = applyConstraints(withAngleStep, adjustedJoints)
+
+  return {
+    links: withConstraints,
+    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
+    isWithinAcceptedError: undefined,
+  }
+}
+
+export interface JointTransform {
+  position: V3
+  rotation: Quaternion
+}
+
+function applyConstraints(withAngleStep: Link[], adjustedJoints: JointTransform[]) {
+  return withAngleStep.map(({ position, rotation, constraints }, index) => {
     if (constraints === undefined) return { position: position, rotation }
 
     if (isExactRotation(constraints)) {
@@ -200,17 +290,6 @@ export function solve(links: Link[], baseJoint: JointTransform, target: V3, opti
     const clampedRotation = QuaternionO.clamp(rotation, lowerBound, upperBound)
     return { position: position, rotation: clampedRotation, constraints: copyConstraints(constraints) }
   })
-
-  return {
-    links: withConstraints,
-    getErrorDistance: () => getErrorDistance(withConstraints, baseJoint, target),
-    isWithinAcceptedError: undefined,
-  }
-}
-
-export interface JointTransform {
-  position: V3
-  rotation: Quaternion
 }
 
 /**

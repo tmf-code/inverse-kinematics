@@ -17,7 +17,10 @@ function App() {
     <HashRouter basename="/">
       <Menu />
       <Route path="/2d">
-        <TwoDimension />
+        <TwoDimension method="FABRIK" />
+      </Route>
+      <Route path="/2d-ccd">
+        <TwoDimension method="CCD" />
       </Route>
       <Route path="/2d-local">
         <ConstrainedLocalRotation2D />
@@ -26,10 +29,13 @@ function App() {
         <ConstrainedGlobalRotation2D />
       </Route>
       <Route exact path="/">
-        <TwoDimension />
+        <TwoDimension method="FABRIK" />
       </Route>
       <Route path="/3d">
-        <Basic />
+        <Basic method="FABRIK" />
+      </Route>
+      <Route path="/3d-ccd">
+        <Basic method="CCD" />
       </Route>
       <Route path="/3d-local">
         <ConstrainedLocalRotation3D />
@@ -72,6 +78,9 @@ function Menu() {
         <li className={pathname === '/2d' ? 'highlighted' : ''}>
           <Link to="/2d">2D basic</Link>
         </li>
+        <li className={pathname === '/2d-ccd' ? 'highlighted' : ''}>
+          <Link to="/2d-ccd">2D basic - CCD</Link>
+        </li>
         <li className={pathname === '/2d-local' ? 'highlighted' : ''}>
           <Link to="/2d-local">Constrained local rotation</Link>
         </li>
@@ -83,6 +92,9 @@ function Menu() {
       <ul>
         <li className={pathname === '/3d' ? 'highlighted' : ''}>
           <Link to="/3d">3D basic</Link>
+        </li>
+        <li className={pathname === '/3d-ccd' ? 'highlighted' : ''}>
+          <Link to="/3d-ccd">3D CCD</Link>
         </li>
         <li className={pathname === '/three-js' ? 'highlighted' : ''}>
           <Link to="/three-js">Three.js</Link>

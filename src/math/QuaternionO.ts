@@ -2,6 +2,7 @@ import * as V3O from './V3O'
 import { Quaternion } from './Quaternion'
 import { V3 } from './V3'
 import * as MathUtils from './MathUtils'
+import { QuaternionO } from 'src'
 
 export const multiply = (a: Quaternion, b: Quaternion): Quaternion => {
   const qax = a[0]
@@ -38,6 +39,38 @@ export const fromEulerAngles = ([x, y, z]: V3): Quaternion => {
     c1 * s2 * c3 - s1 * c2 * s3,
     c1 * c2 * s3 + s1 * s2 * c3,
     c1 * c2 * c3 - s1 * s2 * s3,
+  ]
+}
+
+export const slerp = (from: Quaternion, to: Quaternion, amount: number): Quaternion => {
+  // Calculate angle between them.
+  const cosHalfTheta = from[0] * to[0] + from[1] * to[1] + from[2] * to[2] + from[3] * to[3]
+  // Are parallel in either direction. from = to || from = -to
+  if (Math.abs(cosHalfTheta) >= 1.0) {
+    return from
+  }
+
+  const halfTheta = Math.acos(cosHalfTheta)
+  const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta)
+  // if theta = 180 degrees then result is not fully defined
+  // we could rotate around any axis normal to qa or qb
+  if (Math.abs(sinHalfTheta) < 0.001) {
+    return [
+      from[0] * 0.5 + to[0] * 0.5,
+      from[1] * 0.5 + to[1] * 0.5,
+      from[2] * 0.5 + to[2] * 0.5,
+      from[3] * 0.5 + to[3] * 0.5,
+    ]
+  }
+
+  const ratioA = Math.sin((1 - amount) * halfTheta) / sinHalfTheta
+  const ratioB = Math.sin(amount * halfTheta) / sinHalfTheta
+  //calculate Quaternion.
+  return [
+    from[0] * ratioA + to[0] * ratioB,
+    from[1] * ratioA + to[1] * ratioB,
+    from[2] * ratioA + to[2] * ratioB,
+    from[3] * ratioA + to[3] * ratioB,
   ]
 }
 

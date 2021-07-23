@@ -71,6 +71,7 @@ function ThreeJS() {
     const results = Solve3D.solve(links, base, target, {
       learningRate,
       acceptedError: knownRangeOfMovement / 1000,
+      method: 'FABRIK',
     }).links
 
     links.forEach((_, index) => {

@@ -77,6 +77,7 @@ function Scene() {
       const results = Solve3D.solve(links, baseTransform, target, {
         learningRate: learningRate(knownRangeOfMovement),
         acceptedError: knownRangeOfMovement / 1000,
+        method: 'FABRIK',
       }).links
 
       results.forEach((link, index, array) => {

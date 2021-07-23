@@ -117,7 +117,7 @@ describe('forwardPass', () => {
     ]
     const target: V3 = [0, 1, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
-    const result = solve(links, base, target, { learningRate: 0 })
+    const result = solve(links, base, target, { learningRate: 0, method: 'FABRIK' })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
@@ -138,7 +138,7 @@ describe('forwardPass', () => {
     ]
     const target: V3 = [0, 1, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
-    const result = solve(links, base, target, { learningRate: 0 })
+    const result = solve(links, base, target, { learningRate: 0, method: 'FABRIK' })
     links = result.links
 
     const jointTransforms = getJointTransforms(links, base)
@@ -149,7 +149,7 @@ describe('forwardPass', () => {
   })
 })
 
-describe('solve', () => {
+describe('solve FABRIK', () => {
   it('Runs with empty links array', () => {
     const links: Link[] = []
     const linksCopy = cloneDeep(links)
@@ -164,7 +164,7 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidImprove(links, base, target, 3)
+    solveAndCheckDidImprove(links, base, target, 3, 'FABRIK')
   })
 
   it('Reduces distance to target each time it is called with complex chain', () => {
@@ -178,7 +178,7 @@ describe('solve', () => {
 
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidImprove(links, base, target, 3)
+    solveAndCheckDidImprove(links, base, target, 3, 'FABRIK')
   })
 
   it('Should not improve if output of previous step is not used as input to following step', () => {
@@ -194,6 +194,7 @@ describe('solve', () => {
 
     const options: SolveOptions = {
       acceptedError: 0,
+      method: 'FABRIK',
     }
 
     for (let index = 0; index < 3; index++) {
@@ -211,7 +212,7 @@ describe('solve', () => {
     const target: V3 = [0, 50, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidNotImprove(links, base, target, 3)
+    solveAndCheckDidNotImprove(links, base, target, 3, 'FABRIK')
   })
 
   it('Respects no rotation binary constraint', () => {
@@ -225,7 +226,7 @@ describe('solve', () => {
     const target: V3 = [0, 50, 0]
     const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-    solveAndCheckDidNotImprove(links, base, target, 3)
+    solveAndCheckDidNotImprove(links, base, target, 3, 'FABRIK')
   })
 
   it('Respects binary constraint', () => {
@@ -247,7 +248,128 @@ describe('solve', () => {
     let error: number
     let lastError = getErrorDistance(links, base, target)
     while (true) {
-      const result = solve(links, base, target, { learningRate: 10e-3 })
+      const result = solve(links, base, target, { learningRate: 10e-3, method: 'FABRIK' })
+      links = result.links
+      error = result.getErrorDistance()
+
+      const errorDifference = lastError - error
+      const didNotImprove = errorDifference <= 0
+      if (didNotImprove) break
+
+      lastError = error
+    }
+
+    // Length 1, pointing 45 degrees on way from x to y
+    const expectedError = V3O.euclideanDistance(target, [0.7071, 0.7071, 0])
+    expect(error).toBeCloseTo(expectedError)
+
+    const jointTransforms = getJointTransforms(links, base)
+
+    // Quaternion from euler rotation about z 45 degrees
+    expect(jointTransforms.transforms[1]?.rotation).toBeCloseToQuaternion([0, 0, 0.3826834, 0.9238795])
+  })
+})
+
+describe('solve CCD', () => {
+  it('Runs with empty links array', () => {
+    const links: Link[] = []
+    const linksCopy = cloneDeep(links)
+    solve(links, { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }, [0, 0, 0], { method: 'CCD' })
+
+    expect(links).toStrictEqual<Link[]>(linksCopy)
+  })
+
+  it('Reduces distance to target each time it is called', () => {
+    const links: Link[] = [{ rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] }]
+    const target: V3 = [0, 50, 0]
+
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidImprove(links, base, target, 1, 'CCD')
+  })
+
+  it('Reduces distance to target each time it is called with complex chain', () => {
+    const links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+    ]
+    const target: V3 = [0, 50, 0]
+
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidImprove(links, base, target, 1, 'CCD')
+  })
+
+  it('Should not improve if output of previous step is not used as input to following step', () => {
+    const links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0] },
+    ]
+    const target: V3 = [0, 50, 0]
+
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    const options: SolveOptions = {
+      acceptedError: 0,
+      method: 'CCD',
+    }
+
+    for (let index = 0; index < 3; index++) {
+      const errorBefore = getErrorDistance(links, base, target)
+      solve(links, base, target, options)
+      const errorAfter = Solve3D.getErrorDistance(links, base, target)
+      expect(errorBefore).toEqual(errorAfter)
+    }
+  })
+
+  it('Respects no rotation unary constraint', () => {
+    const links: Link[] = [
+      { rotation: QuaternionO.zeroRotation(), position: [50, 0, 0], constraints: { yaw: 0, roll: 0, pitch: 0 } },
+    ]
+    const target: V3 = [0, 50, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidNotImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Respects no rotation binary constraint', () => {
+    const links: Link[] = [
+      {
+        rotation: QuaternionO.zeroRotation(),
+        position: [50, 0, 0],
+        constraints: { yaw: { min: 0, max: 0 }, roll: { min: 0, max: 0 }, pitch: { min: 0, max: 0 } },
+      },
+    ]
+    const target: V3 = [0, 50, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    solveAndCheckDidNotImprove(links, base, target, 3, 'CCD')
+  })
+
+  it('Respects binary constraint', () => {
+    let links: Link[] = [
+      {
+        rotation: QuaternionO.zeroRotation(),
+        position: [1, 0, 0],
+        constraints: {
+          yaw: 0,
+          // Roll about z, causes x points vector to rotate to point up at y
+          roll: { min: -Math.PI / 4, max: Math.PI / 4 },
+          pitch: 0,
+        },
+      },
+    ]
+    const target: V3 = [0, 1, 0]
+    const base: JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
+
+    let error: number
+    let lastError = getErrorDistance(links, base, target)
+    while (true) {
+      const result = solve(links, base, target, { learningRate: 10e-3, method: 'CCD' })
       links = result.links
       error = result.getErrorDistance()
 
@@ -273,9 +395,16 @@ function cloneDeep<T>(object: T): T {
   return JSON.parse(JSON.stringify(object))
 }
 
-function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V3, times: number) {
+function solveAndCheckDidImprove(
+  links: Link[],
+  base: JointTransform,
+  target: V3,
+  times: number,
+  method: 'CCD' | 'FABRIK',
+) {
   const options: SolveOptions = {
     acceptedError: 0,
+    method,
   }
 
   let solveResult: undefined | SolveResult
@@ -289,9 +418,16 @@ function solveAndCheckDidImprove(links: Link[], base: JointTransform, target: V3
   }
 }
 
-function solveAndCheckDidNotImprove(links: Link[], base: JointTransform, target: V3, times: number) {
+function solveAndCheckDidNotImprove(
+  links: Link[],
+  base: JointTransform,
+  target: V3,
+  times: number,
+  method: 'CCD' | 'FABRIK',
+) {
   const options: SolveOptions = {
     acceptedError: 0,
+    method,
   }
 
   let solveResult: undefined | SolveResult

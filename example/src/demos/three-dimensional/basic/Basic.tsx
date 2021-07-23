@@ -11,7 +11,7 @@ import { Target } from '../components/Target'
 
 const base: Solve3D.JointTransform = { position: [0, 0, 0], rotation: QuaternionO.zeroRotation() }
 
-export default function Basic() {
+export default function Basic({ method }: { method: 'CCD' | 'FABRIK' }) {
   const [target, setTarget] = useState([500, 50, 0] as V3)
   const [links, setLinks] = useState<Solve3D.Link[]>([])
 
@@ -45,8 +45,9 @@ export default function Basic() {
     }
 
     const result = Solve3D.solve(links, base, target, {
-      learningRate,
-      acceptedError: 0.1,
+      method,
+      learningRate: method === 'FABRIK' ? learningRate : 1,
+      acceptedError: 0,
     }).links
 
     links.forEach((_, index) => {
@@ -81,9 +82,9 @@ const makeLinks = (linkCount: number, linkLength: number, linkMinAngle: number, 
   Array.from({ length: linkCount }).map(() => ({
     position: [linkLength, 0, 0],
     rotation: QuaternionO.zeroRotation(),
-    constraints: {
-      pitch: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
-      yaw: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
-      roll: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
-    },
+    // constraints: {
+    //   pitch: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    //   yaw: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    //   roll: { min: (linkMinAngle * Math.PI) / 180, max: (linkMaxAngle * Math.PI) / 180 },
+    // },
   }))

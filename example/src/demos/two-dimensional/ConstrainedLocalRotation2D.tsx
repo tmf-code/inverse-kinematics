@@ -43,6 +43,7 @@ export default function ConstrainedLocalRotation2D() {
     }
 
     const result = Solve2D.solve(links, base, target, {
+      method: 'FABRIK',
       learningRate,
       acceptedError: 10,
     }).links
