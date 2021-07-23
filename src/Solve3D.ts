@@ -183,8 +183,21 @@ function solveCCD(
     const { rotation, position, constraints } = link
     const joint = joints.transforms[index]!
 
-    const directionToTarget = V3O.subtract(target, joint.position)
-    const directionToEffector = V3O.subtract(effectorPosition, joint.position)
+    /**
+     * Following http://rodolphe-vaillant.fr/?e=114
+     *
+     * We found that if we didn't convert the world coordinate system here to local
+     * that it would give very unstable solutions. It seems that others have struggled
+     * with the same thing.
+     *
+     * https://github.com/zalo/zalo.github.io/blob/fb1b899ce9825b1123b0ebd2bfdce2459566e6db/assets/js/IK/IKExample.js#L67
+     */
+    const inverseRotation = QuaternionO.inverse(joint.rotation)
+    const rotatedTarget = V3O.rotate(target, inverseRotation)
+    const rotatedEffector = V3O.rotate(effectorPosition, inverseRotation)
+    const rotatedJoint = V3O.rotate(joint.position, inverseRotation)
+    const directionToTarget = V3O.subtract(rotatedTarget, rotatedJoint)
+    const directionToEffector = V3O.subtract(rotatedEffector, rotatedJoint)
 
     const angleBetween = QuaternionO.rotationFromTo(directionToEffector, directionToTarget)
 
